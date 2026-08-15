@@ -35,6 +35,8 @@ A high-performance, Bloomberg Terminal-like web application designed to be launc
    run.bat
    ```
 
+*Note: `run.bat` automatically searches for Python across system PATH, `py` launcher, and default Windows installation paths (`%LocalAppData%\Programs\Python`, `C:\Python3*`, etc.).*
+
 ---
 
 ### Manual Launch via Command Line
@@ -50,6 +52,25 @@ A high-performance, Bloomberg Terminal-like web application designed to be launc
    ```
 
 3. Open your browser and navigate to `http://localhost:8501`.
+
+---
+
+## ❓ Troubleshooting: "Python is not installed or not in PATH"
+
+If you see an error stating Python is not installed or not in PATH when clicking `run.bat`:
+
+1. **Re-install or Modify Python Setup**:
+   - Download Python from [python.org/downloads](https://www.python.org/downloads/).
+   - When running the installer, **ensure you check the box that says "Add python.exe to PATH"** at the bottom of the first screen.
+
+2. **Using the Python Launcher (`py`)**:
+   - The standard Windows Python installer installs the `py` launcher in `C:\Windows\py.exe` automatically. `run.bat` will detect this automatically even if `python` isn't in your PATH.
+
+3. **Manually Adding Python to PATH**:
+   - Search for "Edit the system environment variables" in Windows Start menu.
+   - Click **Environment Variables...**
+   - Under *System variables* or *User variables*, select `Path` and click **Edit...**.
+   - Add your Python folder path (e.g. `C:\Users\<YourUsername>\AppData\Local\Programs\Python\Python312`).
 
 ---
 
