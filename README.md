@@ -1,20 +1,21 @@
 # 📈 Bloomberg Terminal Web Application (Local Desktop Edition)
 
-A high-performance, Bloomberg Terminal-like web application designed to be launched locally from your desktop. Built with Python, Streamlit, Plotly, and yFinance, it replicates the iconic dark/amber terminal aesthetic, command prompt system, function key navigation, real-time financial data, and technical charting.
+A high-performance, Bloomberg Terminal-like web application designed to be launched locally from your desktop. Built with Python, Streamlit, Plotly, and yFinance, it replicates the iconic dark/amber terminal aesthetic, command prompt system, function key navigation, real-time financial data, technical charting, and fixed income analysis.
 
 ---
 
 ## 🌟 Key Features
 
 - **Iconic Bloomberg Interface**: Classic black & amber color palette with glowing typography, status bars, and monospaced styling.
-- **Command Prompt Bar & Function Keys**: Navigate seamlessly via terminal commands (e.g. `AAPL GP <GO>`, `WEI`, `TOP`, `PORT`) or top function shortcut keys (`F1` - `F8`).
+- **Command Prompt Bar & Function Keys**: Navigate seamlessly via terminal commands (e.g. `AAPL GP <GO>`, `WEI`, `WIRP`, `FI`, `TOP`, `PORT`) or top function shortcut keys (`F1` - `F8`).
 - **F2: GP (Graph Plot & Technical Analysis)**: Interactive Plotly candlestick & line charts featuring technical indicators like SMA 20/50/200, Bollinger Bands, Volume, RSI (14), and MACD.
 - **F3: DES (Security Description & Statistics)**: Comprehensive business summaries, market capitalization, trailing/forward P/E ratios, 52-week ranges, dividend yields, and trading statistics.
 - **F4: FA (Financial Analysis)**: Detailed financial statements including Income Statements, Balance Sheets, and Cash Flow Statements.
 - **F5: WEI (World Equity Indices)**: Live overview of global indices (S&P 500, Nasdaq, Dow Jones, FTSE, Nikkei, DAX), commodities (Crude Oil, Gold), crypto (Bitcoin), and forex.
-- **F6: TOP (Market News)**: Live financial news feed timestamped with ticker tagging.
+- **F6: WIRP / FI (World Interest Rates & Fixed Income)**: Global central bank policy rates (FED, ECB, BOE, BOJ, etc.), benchmark 10Y sovereign bond yields, Treasury yield curve maturity structure plot, and benchmark bond ETFs (AGG, TLT, SHY, LQD, HYG, TIP, EMB).
 - **F7: PORT (Portfolio Monitor & Simulator)**: Interactive position manager tracking shares, buy price, current market value, total unrealized P&L ($ and %), and cost basis.
 - **F8: MOST (Market Movers)**: Real-time rankings of top gainers, top losers, and highest volume equities.
+- **TOP (Market News)**: Live financial news feed timestamped with ticker tagging.
 - **ECO (Macroeconomic Indicators)**: US Treasury yields, VIX volatility index, interest rates, and commodity futures.
 
 ---
@@ -84,6 +85,7 @@ Type any of the following into the top command prompt and click **`EXECUTE <GO>`
 | `<TICKER> FA` | View financial statements (Income statement, Balance sheet) |
 | `<TICKER> TOP` | View live news feed related to symbol |
 | `WEI` | Launch World Equity Indices & Global Markets view |
+| `WIRP` / `FI` / `RATES` | View World Interest Rates, Central Bank Policy, Yield Curves & Bond ETFs |
 | `PORT` | Open Portfolio P&L Manager |
 | `MOST` | View Market Movers (Top Gainers, Top Losers, Most Active) |
 | `ECO` | View Macroeconomic & Treasury Interest Rate Indicators |

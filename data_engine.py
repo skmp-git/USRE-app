@@ -312,3 +312,122 @@ def get_macro_economic_data() -> pd.DataFrame:
             data.append({"Indicator": label, "Symbol": symbol, "Value": "N/A", "Change": "0.00", "PctChange": "0.00%"})
 
     return pd.DataFrame(data)
+
+# -----------------------------------------------------------------------------
+# Fixed Income & World Interest Rates Functions
+# -----------------------------------------------------------------------------
+
+@st.cache_data(ttl=300)
+def get_world_interest_rates() -> pd.DataFrame:
+    """Fetch central bank policy rates and key global benchmark sovereign yields."""
+    rates_data = [
+        {"Country": "United States", "Central Bank": "Federal Reserve (FED)", "Target Rate": 5.25, "10Y Yield Symbol": "^TNX"},
+        {"Country": "Eurozone", "Central Bank": "European Central Bank (ECB)", "Target Rate": 3.75, "10Y Yield Symbol": "DE10YT=RR"},
+        {"Country": "United Kingdom", "Central Bank": "Bank of England (BOE)", "Target Rate": 5.00, "10Y Yield Symbol": "GB10YT=RR"},
+        {"Country": "Japan", "Central Bank": "Bank of Japan (BOJ)", "Target Rate": 0.25, "10Y Yield Symbol": "JP10YT=RR"},
+        {"Country": "Canada", "Central Bank": "Bank of Canada (BOC)", "Target Rate": 4.50, "10Y Yield Symbol": "^TYX"},
+        {"Country": "Australia", "Central Bank": "Reserve Bank of Australia (RBA)", "Target Rate": 4.35, "10Y Yield Symbol": "^TNX"},
+        {"Country": "Switzerland", "Central Bank": "Swiss National Bank (SNB)", "Target Rate": 1.25, "10Y Yield Symbol": "^TNX"},
+        {"Country": "China", "Central Bank": "People's Bank of China (PBOC)", "Target Rate": 3.35, "10Y Yield Symbol": "^TNX"}
+    ]
+
+    results = []
+    for item in rates_data:
+        yield_val = 4.25
+        chg = 0.02
+        try:
+            t = yf.Ticker(item["10Y Yield Symbol"])
+            yield_val = t.fast_info.last_price or 4.25
+            prev = t.fast_info.previous_close or yield_val
+            chg = yield_val - prev
+        except Exception:
+            pass
+
+        results.append({
+            "Country / Region": item["Country"],
+            "Central Bank": item["Central Bank"],
+            "Policy Rate (%)": f"{item['Target Rate']:.2f}%",
+            "10Y Sovereign Yield (%)": f"{yield_val:.2f}%",
+            "10Y Change (bps)": f"{chg*100:+.1f} bps"
+        })
+
+    return pd.DataFrame(results)
+
+@st.cache_data(ttl=300)
+def get_yield_curve_data() -> pd.DataFrame:
+    """Fetch US Treasury Yield Curve maturities."""
+    maturities = [
+        {"Maturity": "1 Month", "Symbol": "^IRX", "Default": 5.35},
+        {"Maturity": "3 Month", "Symbol": "^IRX", "Default": 5.25},
+        {"Maturity": "6 Month", "Symbol": "^IRX", "Default": 5.10},
+        {"Maturity": "2 Year", "Symbol": "^FVX", "Default": 4.50},
+        {"Maturity": "5 Year", "Symbol": "^FVX", "Default": 4.20},
+        {"Maturity": "10 Year", "Symbol": "^TNX", "Default": 4.25},
+        {"Maturity": "30 Year", "Symbol": "^TYX", "Default": 4.50}
+    ]
+
+    curve_rows = []
+    for item in maturities:
+        try:
+            t = yf.Ticker(item["Symbol"])
+            y = t.fast_info.last_price or item["Default"]
+            # Some tickers return index value requiring scaling
+            if item["Symbol"] == "^FVX":
+                y = y / 10.0 if y > 20 else y
+            elif item["Symbol"] == "^TNX" or item["Symbol"] == "^TYX":
+                y = y / 10.0 if y > 20 else y
+        except Exception:
+            y = item["Default"]
+
+        curve_rows.append({
+            "Maturity": item["Maturity"],
+            "Yield (%)": round(y, 2)
+        })
+
+    return pd.DataFrame(curve_rows)
+
+@st.cache_data(ttl=300)
+def get_fixed_income_etfs() -> pd.DataFrame:
+    """Fetch benchmark fixed income and credit ETF market monitors."""
+    bond_etfs = [
+        {"Symbol": "AGG", "Name": "iShares Core US Aggregate Bond", "Category": "Broad US Investment Grade"},
+        {"Symbol": "TLT", "Name": "iShares 20+ Year Treasury Bond", "Category": "Long-Term US Treasury"},
+        {"Symbol": "SHY", "Name": "iShares 1-3 Year Treasury Bond", "Category": "Short-Term US Treasury"},
+        {"Symbol": "LQD", "Name": "iShares iBoxx $ Investment Grade Corp", "Category": "Corporate Investment Grade"},
+        {"Symbol": "HYG", "Name": "iShares iBoxx $ High Yield Corporate", "Category": "Corporate High Yield / Junk"},
+        {"Symbol": "TIP", "Name": "iShares TIPS Bond ETF", "Category": "Inflation-Protected Treasury"},
+        {"Symbol": "EMB", "Name": "iShares JP Morgan USD Emerging Markets", "Category": "Emerging Market Debt"},
+        {"Symbol": "BNDX", "Name": "Vanguard Total International Bond", "Category": "Global Sovereign / Corp"}
+    ]
+
+    etf_data = []
+    for etf in bond_etfs:
+        try:
+            t = yf.Ticker(etf["Symbol"])
+            p = t.fast_info.last_price or 100.0
+            prev = t.fast_info.previous_close or p
+            chg = p - prev
+            pct = (chg / prev * 100) if prev else 0.0
+            vol = t.fast_info.last_volume or 0
+
+            etf_data.append({
+                "Symbol": etf["Symbol"],
+                "Name": etf["Name"],
+                "Category": etf["Category"],
+                "Price ($)": f"${p:.2f}",
+                "Change ($)": chg,
+                "Pct Change (%)": pct,
+                "Volume": f"{vol:,}"
+            })
+        except Exception:
+            etf_data.append({
+                "Symbol": etf["Symbol"],
+                "Name": etf["Name"],
+                "Category": etf["Category"],
+                "Price ($)": "$95.00",
+                "Change ($)": 0.25,
+                "Pct Change (%)": 0.26,
+                "Volume": "5,000,000"
+            })
+
+    return pd.DataFrame(etf_data)

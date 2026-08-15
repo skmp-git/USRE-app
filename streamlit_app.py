@@ -63,7 +63,7 @@ func_keys = [
     ("F3: DES (INFO)", "DES"),
     ("F4: FA (FIN)", "FA"),
     ("F5: WEI (INDEX)", "WEI"),
-    ("F6: TOP (NEWS)", "TOP"),
+    ("F6: WIRP / FI", "WIRP"),
     ("F7: PORTFOLIO", "PORT"),
     ("F8: MOST (MOVERS)", "MOST")
 ]
@@ -81,7 +81,7 @@ with cmd_col1:
         "COMMAND PROMPT",
         value=f"{st.session_state.current_ticker} Equity {st.session_state.current_view}",
         key="cmd_bar_input",
-        placeholder="Enter Ticker or Command (e.g. AAPL, WEI, TOP, MOST, ECO, PORT) <GO>"
+        placeholder="Enter Ticker or Command (e.g. AAPL, WEI, WIRP, FI, TOP, MOST, ECO, PORT) <GO>"
     )
 
 with cmd_col2:
@@ -90,8 +90,11 @@ with cmd_col2:
         if len(parsed) > 0:
             first_token = parsed[0]
             # Check if first token is a view command
-            if first_token in ["HELP", "GP", "DES", "FA", "WEI", "TOP", "PORT", "MOST", "ECO"]:
-                st.session_state.current_view = first_token
+            if first_token in ["HELP", "GP", "DES", "FA", "WEI", "WIRP", "FI", "RATES", "TOP", "PORT", "MOST", "ECO"]:
+                if first_token in ["FI", "RATES"]:
+                    st.session_state.current_view = "WIRP"
+                else:
+                    st.session_state.current_view = first_token
             else:
                 st.session_state.current_ticker = first_token
                 if len(parsed) > 1 and parsed[1] in ["GP", "DES", "FA", "TOP", "HELP"]:
@@ -299,9 +302,66 @@ elif view == "WEI":
             height=450
         )
 
+# VIEW: WIRP / FI (World Interest Rates & Fixed Income)
+elif view in ["WIRP", "FI", "RATES"]:
+    st.markdown('<div class="bb-panel-header">F6: WIRP / FI - WORLD INTEREST RATES & FIXED INCOME TERMINAL</div>', unsafe_allow_html=True)
+
+    fi_tab1, fi_tab2, fi_tab3 = st.tabs(["WORLD INTEREST RATES & CENTRAL BANKS", "TREASURY YIELD CURVE", "FIXED INCOME & BOND ETFS"])
+
+    with fi_tab1:
+        st.markdown("### CENTRAL BANK POLICY RATES & BENCHMARK SOVEREIGN YIELDS")
+        df_wirp = data_engine.get_world_interest_rates()
+        st.dataframe(df_wirp, use_container_width=True, height=350)
+
+    with fi_tab2:
+        st.markdown("### U.S. TREASURY YIELD CURVE MONITOR")
+        df_curve = data_engine.get_yield_curve_data()
+
+        col_c1, col_c2 = st.columns([2, 1])
+        with col_c1:
+            fig_curve = go.Figure()
+            fig_curve.add_trace(go.Scatter(
+                x=df_curve["Maturity"],
+                y=df_curve["Yield (%)"],
+                mode='lines+markers',
+                name='Current Yield Curve',
+                line=dict(color='#00e5ff', width=3),
+                marker=dict(size=10, color='#ffaa00')
+            ))
+            fig_curve.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="#0d0e11",
+                plot_bgcolor="#14161d",
+                font=dict(family="Share Tech Mono, monospace", color="#ffaa00"),
+                title="US TREASURY YIELD CURVE MATURITY STRUCTURE",
+                xaxis_title="Maturity",
+                yaxis_title="Yield (%)",
+                height=400,
+                margin=dict(l=20, r=20, t=40, b=20)
+            )
+            fig_curve.update_xaxes(gridcolor="#2a2d3d")
+            fig_curve.update_yaxes(gridcolor="#2a2d3d")
+            st.plotly_chart(fig_curve, use_container_width=True)
+
+        with col_c2:
+            st.markdown("##### YIELD CURVE MATURITIES")
+            st.dataframe(df_curve, use_container_width=True, height=350)
+
+    with fi_tab3:
+        st.markdown("### GLOBAL FIXED INCOME & CREDIT ETF MARKET MONITOR")
+        df_etfs = data_engine.get_fixed_income_etfs()
+        st.dataframe(
+            df_etfs.style.map(
+                lambda val: 'color: #00e676; font-weight: bold;' if val > 0 else ('color: #ff5252; font-weight: bold;' if val < 0 else ''),
+                subset=['Change ($)', 'Pct Change (%)']
+            ),
+            use_container_width=True,
+            height=400
+        )
+
 # VIEW: TOP (Market News)
 elif view == "TOP":
-    st.markdown(f'<div class="bb-panel-header">F6: TOP - MARKET NEWS FEED ({ticker})</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="bb-panel-header">MARKET NEWS FEED ({ticker})</div>', unsafe_allow_html=True)
 
     news_items = data_engine.get_news(ticker)
     for news in news_items:
@@ -423,6 +483,7 @@ elif view == "HELP":
     - **`<TICKER> FA`** : Financial Statements (Income, Balance Sheet, Cash Flow).
     - **`<TICKER> TOP`**: Live News Feed related to specified symbol.
     - **`WEI`**        : World Equity Indices, Forex, Crypto & Commodities.
+    - **`WIRP` / `FI`**: World Interest Rates, Central Bank Policy & Yield Curves.
     - **`PORT`**       : Portfolio P&L Monitor & Position Manager.
     - **`MOST`**       : Top Market Gainers, Losers, and Volume Active Equities.
     - **`ECO`**        : Macroeconomic Indicators & Federal Interest Rates.
