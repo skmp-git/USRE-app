@@ -43,7 +43,7 @@ A high-performance, Bloomberg Terminal-like web application designed to be launc
 
 1. **Install Dependencies**:
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements.txt --no-cache-dir
    ```
 
 2. **Start the Application**:
@@ -55,22 +55,21 @@ A high-performance, Bloomberg Terminal-like web application designed to be launc
 
 ---
 
-## ❓ Troubleshooting: "Python is not installed or not in PATH"
+## ❓ Troubleshooting & FAQs
 
+### 1. "Python is not installed or not in PATH"
 If you see an error stating Python is not installed or not in PATH when clicking `run.bat`:
+- **Re-install or Modify Python Setup**: Download Python from [python.org/downloads](https://www.python.org/downloads/). When running the installer, **ensure you check the box that says "Add python.exe to PATH"** at the bottom of the first screen.
+- **Using the Python Launcher (`py`)**: The standard Windows Python installer installs the `py` launcher in `C:\Windows\py.exe` automatically. `run.bat` will detect this automatically even if `python` isn't in your PATH.
+- **Manually Adding Python to PATH**: Search for "Edit the system environment variables" in Windows Start menu -> Environment Variables -> Edit `Path` -> Add your Python installation folder.
 
-1. **Re-install or Modify Python Setup**:
-   - Download Python from [python.org/downloads](https://www.python.org/downloads/).
-   - When running the installer, **ensure you check the box that says "Add python.exe to PATH"** at the bottom of the first screen.
-
-2. **Using the Python Launcher (`py`)**:
-   - The standard Windows Python installer installs the `py` launcher in `C:\Windows\py.exe` automatically. `run.bat` will detect this automatically even if `python` isn't in your PATH.
-
-3. **Manually Adding Python to PATH**:
-   - Search for "Edit the system environment variables" in Windows Start menu.
-   - Click **Environment Variables...**
-   - Under *System variables* or *User variables*, select `Path` and click **Edit...**.
-   - Add your Python folder path (e.g. `C:\Users\<YourUsername>\AppData\Local\Programs\Python\Python312`).
+### 2. "WARNING: Cache entry deserialization failed, entry ignored"
+This is a harmless pip cache warning caused by corrupted or incompatible HTTP cache files stored by pip in your local user profile directory.
+- **Automated Fix**: The included `run.bat` and `run.sh` launcher scripts pass `--no-cache-dir` to prevent reading/writing to corrupted pip caches.
+- **Manual Cache Clear**: If running pip manually, you can purge the pip cache using:
+  ```bash
+  pip cache purge
+  ```
 
 ---
 

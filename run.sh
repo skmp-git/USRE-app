@@ -22,7 +22,7 @@ fi
 
 echo "Found Python via: $PYTHON_CMD"
 echo "Checking dependencies..."
-$PYTHON_CMD -m pip install -r requirements.txt --quiet
+$PYTHON_CMD -m pip install -r requirements.txt --no-cache-dir --disable-pip-version-check --quiet
 
 echo "Starting Bloomberg Terminal on http://localhost:8501..."
 $PYTHON_CMD -m streamlit run streamlit_app.py --server.port=8501 --server.headless=false
