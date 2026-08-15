@@ -1,0 +1,186 @@
+/* Bloomberg Terminal Custom Stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;600;700&display=swap');
+
+/* Root dark theme variables */
+:root {
+  --bg-color: #0d0e11;
+  --bg-card: #14161d;
+  --bg-header: #1a1c24;
+  --amber-primary: #ff9900;
+  --amber-bright: #ffaa00;
+  --green-up: #00e676;
+  --red-down: #ff5252;
+  --cyan-accent: #00e5ff;
+  --white-text: #f0f0f0;
+  --gray-text: #8a8d9b;
+  --border-color: #2a2d3d;
+  --font-mono: 'Share Tech Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+/* Global page overrides */
+html, body, [data-testid="stAppViewContainer"] {
+  background-color: var(--bg-color) !important;
+  color: var(--amber-primary) !important;
+  font-family: var(--font-mono) !important;
+}
+
+/* Main container padding */
+.main .block-container {
+  padding-top: 1rem !important;
+  padding-bottom: 2rem !important;
+  max-width: 98% !important;
+}
+
+/* Bloomberg Top Status Bar */
+.bb-status-bar {
+  background-color: #000000;
+  border-bottom: 2px solid var(--amber-primary);
+  padding: 6px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.bb-status-logo {
+  color: #ff9900;
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 1.5px;
+}
+
+.bb-live-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--green-up);
+  border-radius: 50%;
+  margin-right: 6px;
+  box-shadow: 0 0 8px var(--green-up);
+}
+
+/* Command Header Bar */
+.bb-command-box {
+  background-color: #12141a;
+  border: 1px solid var(--amber-primary);
+  border-radius: 4px;
+  padding: 8px 15px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 0 10px rgba(255, 153, 0, 0.15);
+}
+
+.bb-command-prompt {
+  color: var(--amber-primary);
+  font-weight: bold;
+  margin-right: 10px;
+  font-size: 15px;
+}
+
+/* Function Key Buttons Grid */
+div.stButton > button {
+  background-color: #1a1d26 !important;
+  color: #ff9900 !important;
+  border: 1px solid #3d4255 !important;
+  border-radius: 2px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  transition: all 0.15s ease-in-out !important;
+  width: 100% !important;
+  padding: 4px 8px !important;
+}
+
+div.stButton > button:hover {
+  background-color: #ff9900 !important;
+  color: #000000 !important;
+  border-color: #ffaa00 !important;
+  box-shadow: 0 0 8px rgba(255, 153, 0, 0.5) !important;
+}
+
+div.stButton > button:active, div.stButton > button[aria-selected="true"] {
+  background-color: #ffaa00 !important;
+  color: #000000 !important;
+}
+
+/* Terminal Card / Panel */
+.bb-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.bb-panel-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  color: var(--cyan-accent);
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Ticker values styling */
+.ticker-up {
+  color: var(--green-up) !important;
+  font-weight: bold;
+}
+
+.ticker-down {
+  color: var(--red-down) !important;
+  font-weight: bold;
+}
+
+.ticker-amber {
+  color: var(--amber-primary) !important;
+}
+
+/* Metric Boxes */
+[data-testid="stMetricValue"] {
+  font-family: var(--font-mono) !important;
+  color: var(--amber-bright) !important;
+  font-size: 22px !important;
+}
+
+[data-testid="stMetricLabel"] {
+  color: var(--gray-text) !important;
+  font-size: 12px !important;
+  font-transform: uppercase;
+}
+
+[data-testid="stMetricDelta"] {
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+}
+
+/* Streamlit Dataframe custom styling */
+[data-testid="stDataFrame"] {
+  background-color: #12141a !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+/* Text Inputs */
+div[data-baseweb="input"] {
+  background-color: #08090c !important;
+  border-color: var(--amber-primary) !important;
+  color: #ffffff !important;
+  font-family: var(--font-mono) !important;
+}
+
+input {
+  color: #ffffff !important;
+  font-family: var(--font-mono) !important;
+}
+
+/* Hide default streamlit headers / footers if needed */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
