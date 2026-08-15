@@ -1,55 +1,55 @@
-/* Bloomberg Terminal Custom Stylesheet */
+/* Bloomberg Terminal Pitch-Black Custom Stylesheet */
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;600;700&display=swap');
 
-/* Root dark theme variables */
 :root {
-  --bg-color: #0d0e11;
-  --bg-card: #14161d;
-  --bg-header: #1a1c24;
-  --amber-primary: #ff9900;
-  --amber-bright: #ffaa00;
-  --green-up: #00e676;
-  --red-down: #ff5252;
-  --cyan-accent: #00e5ff;
-  --white-text: #f0f0f0;
-  --gray-text: #8a8d9b;
-  --border-color: #2a2d3d;
+  --bg-color: #000000;
+  --bg-card: #050505;
+  --bg-header: #0a0a0a;
+  --amber-primary: #FFB000;
+  --amber-bright: #FFC000;
+  --green-up: #00FF66;
+  --red-down: #FF3333;
+  --cyan-accent: #00E5FF;
+  --white-text: #FFFFFF;
+  --gray-text: #8A8D9B;
+  --border-color: #332200;
+  --border-active: #FFB000;
   --font-mono: 'Share Tech Mono', 'Fira Code', 'Courier New', monospace;
 }
 
-/* Global page overrides */
-html, body, [data-testid="stAppViewContainer"] {
-  background-color: var(--bg-color) !important;
+/* Global Reset & Pitch Black Background */
+html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+  background-color: #000000 !important;
   color: var(--amber-primary) !important;
   font-family: var(--font-mono) !important;
 }
 
-/* Main container padding */
+/* Main Container Padding */
 .main .block-container {
-  padding-top: 1rem !important;
-  padding-bottom: 2rem !important;
-  max-width: 98% !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 1rem !important;
+  max-width: 99% !important;
 }
 
-/* Bloomberg Top Status Bar */
+/* Bloomberg Top Status Header */
 .bb-status-bar {
   background-color: #000000;
   border-bottom: 2px solid var(--amber-primary);
-  padding: 6px 15px;
+  padding: 4px 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-family: var(--font-mono);
   font-size: 13px;
-  color: #ffffff;
-  margin-bottom: 10px;
+  color: #FFFFFF;
+  margin-bottom: 6px;
 }
 
 .bb-status-logo {
-  color: #ff9900;
+  color: #FFB000;
   font-weight: bold;
   font-size: 16px;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
 }
 
 .bb-live-indicator {
@@ -62,73 +62,50 @@ html, body, [data-testid="stAppViewContainer"] {
   box-shadow: 0 0 8px var(--green-up);
 }
 
-/* Command Header Bar */
-.bb-command-box {
-  background-color: #12141a;
-  border: 1px solid var(--amber-primary);
-  border-radius: 4px;
-  padding: 8px 15px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 0 10px rgba(255, 153, 0, 0.15);
-}
-
-.bb-command-prompt {
-  color: var(--amber-primary);
-  font-weight: bold;
-  margin-right: 10px;
-  font-size: 15px;
-}
-
-/* Function Key Buttons Grid */
-div.stButton > button {
-  background-color: #1a1d26 !important;
-  color: #ff9900 !important;
-  border: 1px solid #3d4255 !important;
-  border-radius: 2px !important;
-  font-family: var(--font-mono) !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  transition: all 0.15s ease-in-out !important;
-  width: 100% !important;
-  padding: 4px 8px !important;
-}
-
-div.stButton > button:hover {
-  background-color: #ff9900 !important;
-  color: #000000 !important;
-  border-color: #ffaa00 !important;
-  box-shadow: 0 0 8px rgba(255, 153, 0, 0.5) !important;
-}
-
-div.stButton > button:active, div.stButton > button[aria-selected="true"] {
-  background-color: #ffaa00 !important;
-  color: #000000 !important;
-}
-
-/* Terminal Card / Panel */
-.bb-panel {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 12px;
-  margin-bottom: 12px;
-}
-
-.bb-panel-header {
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 6px;
+/* Ticker Ribbon Container */
+.ticker-ribbon-wrapper {
+  background-color: #000000;
+  border: 1px solid #221500;
+  border-top: 1px solid var(--amber-primary);
+  border-bottom: 1px solid var(--amber-primary);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 6px 0;
   margin-bottom: 10px;
-  color: var(--cyan-accent);
-  font-size: 14px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  text-transform: uppercase;
 }
 
-/* Ticker values styling */
+.ticker-ribbon-content {
+  display: inline-block;
+  animation: ticker-scroll 35s linear infinite;
+}
+
+.ticker-ribbon-content:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.ticker-item {
+  display: inline-block;
+  padding: 0 15px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.ticker-symbol {
+  color: #FFB000;
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+.ticker-price {
+  color: #FFFFFF;
+  margin-right: 6px;
+}
+
 .ticker-up {
   color: var(--green-up) !important;
   font-weight: bold;
@@ -139,48 +116,86 @@ div.stButton > button:active, div.stButton > button[aria-selected="true"] {
   font-weight: bold;
 }
 
-.ticker-amber {
-  color: var(--amber-primary) !important;
+/* Terminal Multi-Pane Card Frames */
+.terminal-pane {
+  background-color: #000000;
+  border: 1px solid #443300;
+  border-radius: 2px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: inset 0 0 10px rgba(255, 176, 0, 0.05);
 }
 
-/* Metric Boxes */
-[data-testid="stMetricValue"] {
+.terminal-pane-active {
+  border: 1.5px solid var(--amber-primary) !important;
+  box-shadow: 0 0 12px rgba(255, 176, 0, 0.25) !important;
+}
+
+.terminal-pane-header {
+  background-color: #0a0800;
+  border-bottom: 1px solid #443300;
+  padding: 4px 8px;
+  margin: -10px -10px 10px -10px;
+  color: var(--amber-primary);
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Streamlit Buttons as Keypad Keys */
+div.stButton > button {
+  background-color: #0a0800 !important;
+  color: #FFB000 !important;
+  border: 1px solid #443300 !important;
+  border-radius: 2px !important;
   font-family: var(--font-mono) !important;
-  color: var(--amber-bright) !important;
-  font-size: 22px !important;
-}
-
-[data-testid="stMetricLabel"] {
-  color: var(--gray-text) !important;
   font-size: 12px !important;
-  font-transform: uppercase;
+  font-weight: bold !important;
+  transition: all 0.15s ease-in-out !important;
+  padding: 4px 10px !important;
 }
 
-[data-testid="stMetricDelta"] {
-  font-family: var(--font-mono) !important;
-  font-size: 13px !important;
+div.stButton > button:hover {
+  background-color: #FFB000 !important;
+  color: #000000 !important;
+  box-shadow: 0 0 10px rgba(255, 176, 0, 0.6) !important;
 }
 
-/* Streamlit Dataframe custom styling */
-[data-testid="stDataFrame"] {
-  background-color: #12141a !important;
-  border: 1px solid var(--border-color) !important;
-}
-
-/* Text Inputs */
+/* Inputs */
 div[data-baseweb="input"] {
-  background-color: #08090c !important;
-  border-color: var(--amber-primary) !important;
-  color: #ffffff !important;
+  background-color: #000000 !important;
+  border-color: #FFB000 !important;
+  color: #FFFFFF !important;
   font-family: var(--font-mono) !important;
 }
 
 input {
-  color: #ffffff !important;
+  color: #FFFFFF !important;
   font-family: var(--font-mono) !important;
 }
 
-/* Hide default streamlit headers / footers if needed */
+/* Dataframe Overrides */
+[data-testid="stDataFrame"] {
+  background-color: #000000 !important;
+  border: 1px solid #332200 !important;
+}
+
+/* Metric Cards */
+[data-testid="stMetricValue"] {
+  font-family: var(--font-mono) !important;
+  color: #FFC000 !important;
+  font-size: 20px !important;
+}
+
+[data-testid="stMetricLabel"] {
+  color: var(--gray-text) !important;
+  font-size: 11px !important;
+}
+
+/* Hide Streamlit Branding */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}

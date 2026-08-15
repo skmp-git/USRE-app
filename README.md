@@ -1,40 +1,50 @@
-# 📈 Bloomberg Terminal Web Application (Local Desktop Edition)
+# 📈 Bloomberg Terminal Single-Page Financial Research Dashboard
 
-A high-performance, Bloomberg Terminal-like web application designed to be launched locally from your desktop. Built with Python, Streamlit, Plotly, and yFinance, it replicates the iconic dark/amber terminal aesthetic, command prompt system, function key navigation, real-time financial data, technical charting, and fixed income analysis.
-
----
-
-## 🌟 Key Features
-
-- **Iconic Bloomberg Interface**: Classic black & amber color palette with glowing typography, status bars, and monospaced styling.
-- **Command Prompt Bar & Function Keys**: Navigate seamlessly via terminal commands (e.g. `AAPL GP <GO>`, `WEI`, `WIRP`, `FI`, `TOP`, `PORT`) or top function shortcut keys (`F1` - `F8`).
-- **F2: GP (Graph Plot & Technical Analysis)**: Interactive Plotly candlestick & line charts featuring technical indicators like SMA 20/50/200, Bollinger Bands, Volume, RSI (14), and MACD.
-- **F3: DES (Security Description & Statistics)**: Comprehensive business summaries, market capitalization, trailing/forward P/E ratios, 52-week ranges, dividend yields, and trading statistics.
-- **F4: FA (Financial Analysis)**: Detailed financial statements including Income Statements, Balance Sheets, and Cash Flow Statements.
-- **F5: WEI (World Equity Indices)**: Live overview of global indices (S&P 500, Nasdaq, Dow Jones, FTSE, Nikkei, DAX), commodities (Crude Oil, Gold), crypto (Bitcoin), and forex.
-- **F6: WIRP / FI (World Interest Rates & Fixed Income)**: Global central bank policy rates (FED, ECB, BOE, BOJ, etc.), benchmark 10Y sovereign bond yields, Treasury yield curve maturity structure plot, and benchmark bond ETFs (AGG, TLT, SHY, LQD, HYG, TIP, EMB).
-- **F7: PORT (Portfolio Monitor & Simulator)**: Interactive position manager tracking shares, buy price, current market value, total unrealized P&L ($ and %), and cost basis.
-- **F8: MOST (Market Movers)**: Real-time rankings of top gainers, top losers, and highest volume equities.
-- **TOP (Market News)**: Live financial news feed timestamped with ticker tagging.
-- **ECO (Macroeconomic Indicators)**: US Treasury yields, VIX volatility index, interest rates, and commodity futures.
+A complete, functional single-page financial research dashboard replicating the iconic Bloomberg Terminal layout, pitch-black dark mode aesthetic, and dense multi-pane grid structure.
 
 ---
 
-## 🚀 How to Launch Locally from Desktop
+## 🌟 Key Dashboard Features & Panes
+
+1. **Signature Bloomberg Design**:
+   - Pitch-black background (`#000000`), high-contrast glowing amber text (`#FFB000`), neon green (`#00FF66`), neon red (`#FF3333`), and high-contrast window borders.
+
+2. **Top Pane: Real-Time Scrolling Ticker Ribbon**:
+   - Scrolling ticker ribbon displaying real-time market indices, commodities, currencies, crypto, and top equities.
+
+3. **Left Pane: Stock Lookup & Fundamentals**:
+   - Interactive ticker lookup query pulling live company profile summaries, market capitalization, trailing/forward P/E ratios, 52-week ranges, and dividend yield.
+
+4. **Center Pane: Interactive Financial Chart (Price & Volume)**:
+   - Interactive Plotly chart combining price action (Candlesticks, SMA 20, SMA 50) and volume bars across customizable timeframes (1M, 3M, 6M, 1Y, 5Y).
+
+5. **Right Pane: Real-Time Financial News Stream**:
+   - Real-time news feed streaming headlines, timestamps, publishers, and ticker tags.
+
+6. **Bottom Pane: SEC Filings Financial Metrics Table**:
+   - Data table displaying detailed SEC filings metrics including annual Income Statements and Balance Sheets.
+
+7. **Keyboard Shortcuts & Window Focus**:
+   - Command prompt bar and window focus selector allowing quick navigation ('/', 'Esc', numbers 1-4) to switch focus between windows or display all panes in a multi-grid.
+
+8. **429 Rate-Limit Fail-Safe Caching**:
+   - Built-in automatic fail-safe caching (`@st.cache_data`) that seamlessly switches to cached data feeds if public API rate limits (HTTP 429) or network delays occur.
+
+---
+
+## 🚀 How to Launch Locally
 
 ### Quick Launch (Desktop Launchers)
 
 #### **On Linux / macOS:**
-1. Open terminal in the directory or double-click `run.sh`:
-   ```bash
-   ./run.sh
-   ```
+```bash
+./run.sh
+```
 
 #### **On Windows:**
-1. Double-click `run.bat` or run in Command Prompt / PowerShell:
-   ```cmd
-   run.bat
-   ```
+```cmd
+run.bat
+```
 
 *Note: `run.bat` automatically searches for Python across system PATH, `py` launcher, and default Windows installation paths (`%LocalAppData%\Programs\Python`, `C:\Python3*`, etc.).*
 
@@ -47,7 +57,7 @@ A high-performance, Bloomberg Terminal-like web application designed to be launc
    pip install -r requirements.txt --no-cache-dir
    ```
 
-2. **Start the Application**:
+2. **Start the Single-Page Dashboard**:
    ```bash
    streamlit run streamlit_app.py
    ```
@@ -62,40 +72,17 @@ A high-performance, Bloomberg Terminal-like web application designed to be launc
 If you see an error stating Python is not installed or not in PATH when clicking `run.bat`:
 - **Re-install or Modify Python Setup**: Download Python from [python.org/downloads](https://www.python.org/downloads/). When running the installer, **ensure you check the box that says "Add python.exe to PATH"** at the bottom of the first screen.
 - **Using the Python Launcher (`py`)**: The standard Windows Python installer installs the `py` launcher in `C:\Windows\py.exe` automatically. `run.bat` will detect this automatically even if `python` isn't in your PATH.
-- **Manually Adding Python to PATH**: Search for "Edit the system environment variables" in Windows Start menu -> Environment Variables -> Edit `Path` -> Add your Python installation folder.
 
 ### 2. "WARNING: Cache entry deserialization failed, entry ignored"
 This is a harmless pip cache warning caused by corrupted or incompatible HTTP cache files stored by pip in your local user profile directory.
 - **Automated Fix**: The included `run.bat` and `run.sh` launcher scripts pass `--no-cache-dir` to prevent reading/writing to corrupted pip caches.
-- **Manual Cache Clear**: If running pip manually, you can purge the pip cache using:
-  ```bash
-  pip cache purge
-  ```
-
----
-
-## ⌨️ Terminal Command Directory
-
-Type any of the following into the top command prompt and click **`EXECUTE <GO>`**:
-
-| Command | Action |
-|---|---|
-| `<TICKER> GP` | Open Interactive Technical Chart for ticker (e.g., `AAPL GP`, `NVDA GP`) |
-| `<TICKER> DES` | View security description & key metrics (e.g., `MSFT DES`) |
-| `<TICKER> FA` | View financial statements (Income statement, Balance sheet) |
-| `<TICKER> TOP` | View live news feed related to symbol |
-| `WEI` | Launch World Equity Indices & Global Markets view |
-| `WIRP` / `FI` / `RATES` | View World Interest Rates, Central Bank Policy, Yield Curves & Bond ETFs |
-| `PORT` | Open Portfolio P&L Manager |
-| `MOST` | View Market Movers (Top Gainers, Top Losers, Most Active) |
-| `ECO` | View Macroeconomic & Treasury Interest Rate Indicators |
-| `HELP` | Display Terminal User Guide & Command List |
+- **Manual Cache Clear**: If running pip manually, you can purge the pip cache using `pip cache purge`.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend / Application Framework**: [Streamlit](https://streamlit.io)
+- **Application Framework**: [Streamlit](https://streamlit.io)
 - **Data Engine & Financial API**: [yfinance](https://github.com/ranaroussi/yfinance) & [Pandas](https://pandas.pydata.org/)
 - **Data Visualization**: [Plotly](https://plotly.com/python/)
-- **Styling**: Custom CSS (`style.css`) with Google Fonts (`Share Tech Mono`)
+- **Styling**: Pitch-Black CSS (`style.css`) with Google Fonts (`Share Tech Mono`)
