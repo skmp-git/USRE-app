@@ -198,8 +198,26 @@ if focus_mode in ["ALL PANES (Multi-Grid)", "PANE 1", "PANE 2", "PANE 3"]:
         st.markdown(f'<div class="terminal-pane {"terminal-pane-active" if focus_mode=="PANE 3" else ""}"><div class="terminal-pane-header"><span>[PANE 3] REAL-TIME NEWS STREAM</span><span style="color:#00FF66;">LIVE HEADLINES</span></div></div>', unsafe_allow_html=True)
 
         news_items = data_engine.get_news(current_ticker)
-        for n in news_items:
-            st.markdown(f'<div style="background-color: #050505; border: 1px solid #221500; padding: 6px 8px; margin-bottom: 6px;"><div style="font-size: 11px; color: #8A8D9B;"><span style="color: #FFB000; font-weight: bold;">[{n["ticker"]}]</span> {n["time"]} | {n["publisher"]}</div><div style="font-size: 12px; font-weight: bold; margin-top: 2px;"><a href="{n["link"]}" target="_blank" style="color: #FFFFFF; text-decoration: none;">{n["title"]}</a></div></div>', unsafe_allow_html=True)
+        for idx, n in enumerate(news_items):
+            expander_title = f"[{n['ticker']}] {n['time']} | {n['title'][:55]}..."
+            with st.expander(expander_title, expanded=(idx == 0)):
+                st.markdown(f"""
+                <div style="background-color: #050505; border-left: 2px solid #FFB000; padding: 6px 8px; margin-bottom: 4px;">
+                    <div style="font-size: 11px; color: #8A8D9B; margin-bottom: 4px;">
+                        <span style="color: #FFB000; font-weight: bold;">PUBLISHER:</span> {n['publisher']} |
+                        <span style="color: #00FF66; font-weight: bold;">TIME:</span> {n['time']}
+                    </div>
+                    <div style="font-size: 12px; font-weight: bold; color: #FFFFFF; margin-bottom: 6px;">
+                        {n['title']}
+                    </div>
+                    <div style="font-size: 11px; color: #CCCCCC; line-height: 1.4; margin-bottom: 6px;">
+                        {n.get('summary', 'No further detailed summary available.')}
+                    </div>
+                    <div style="font-size: 11px;">
+                        <a href="{n['link']}" target="_blank" style="color: #00E5FF; font-weight: bold; text-decoration: underline;">[READ FULL SOURCE ARTICLE &gt;]</a>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # BOTTOM PANE 4: SEC Filings Financial Metrics Data Table

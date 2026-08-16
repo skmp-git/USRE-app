@@ -240,25 +240,34 @@ def _fallback_balance_sheet(symbol: str) -> pd.DataFrame:
 
 @st.cache_data(ttl=300)
 def get_news(ticker_symbol: str = "AAPL") -> list:
-    """Fetch market news stream for right pane."""
+    """Fetch market news stream with detailed content summaries for right pane."""
     symbol = ticker_symbol.strip().upper()
     try:
         t = yf.Ticker(symbol)
         raw_news = t.news or []
         news_list = []
         for n in raw_news:
-            title = n.get('title') or n.get('content', {}).get('title', 'News Update')
+            content_dict = n.get('content', {}) if isinstance(n.get('content'), dict) else {}
+            title = n.get('title') or content_dict.get('title') or 'News Update'
             publisher = n.get('publisher') or n.get('provider', {}).get('displayName', 'Bloomberg/Markets')
-            link = n.get('link') or n.get('clickThroughUrl', {}).get('url', '#')
+            link = n.get('link') or n.get('clickThroughUrl', {}).get('url') or '#'
             pub_time = n.get('providerPublishTime')
             time_str = datetime.fromtimestamp(pub_time).strftime('%H:%M') if pub_time else '12:00'
+
+            summary = (
+                n.get('summary') or
+                content_dict.get('summary') or
+                content_dict.get('description') or
+                f"Detailed financial news intelligence report on {symbol}. Institutional trading desks and market participants monitor key earnings guidance, valuation metrics, and volume order flows."
+            )
 
             news_list.append({
                 "title": title,
                 "publisher": publisher,
                 "link": link,
                 "time": time_str,
-                "ticker": symbol
+                "ticker": symbol,
+                "summary": summary
             })
         if not news_list:
             news_list = _fallback_news(symbol)
@@ -268,11 +277,46 @@ def get_news(ticker_symbol: str = "AAPL") -> list:
 
 def _fallback_news(symbol: str) -> list:
     return [
-        {"title": f"{symbol} Outperforms Benchmark as Institutional Volume Surges", "publisher": "Bloomberg Terminal", "link": "#", "time": "14:25", "ticker": symbol},
-        {"title": "Federal Reserve Monetary Policy Committee Holds Benchmark Interest Rates", "publisher": "Reuters Markets", "link": "#", "time": "14:10", "ticker": "MACRO"},
-        {"title": f"Analysts Revise Q3 Earnings Target Price for {symbol}", "publisher": "WSJ Finance", "link": "#", "time": "13:45", "ticker": symbol},
-        {"title": "Global Semiconductor & Hardware Supply Chain Demand Expands", "publisher": "Financial Times", "link": "#", "time": "13:12", "ticker": "TECH"},
-        {"title": "Treasury Yields Stabilize Near 4.25% Benchmark Level", "publisher": "Bloomberg Bond Desk", "link": "#", "time": "12:50", "ticker": "BONDS"}
+        {
+            "title": f"{symbol} Outperforms Benchmark as Institutional Volume Surges",
+            "publisher": "Bloomberg Terminal",
+            "link": "#",
+            "time": "14:25",
+            "ticker": symbol,
+            "summary": f"Trading volume for {symbol} surged past its 50-day average during afternoon market hours. Institutional buying was triggered by strong revenue projections and market share expansion in enterprise hardware and software services."
+        },
+        {
+            "title": "Federal Reserve Monetary Policy Committee Holds Benchmark Interest Rates",
+            "publisher": "Reuters Markets",
+            "link": "#",
+            "time": "14:10",
+            "ticker": "MACRO",
+            "summary": "The FOMC announced its policy rate target will remain stable. Policy makers cited moderating inflation metrics alongside resilient labor statistics, easing credit yield spread pressures across fixed income markets."
+        },
+        {
+            "title": f"Analysts Revise Q3 Earnings Target Price for {symbol}",
+            "publisher": "WSJ Finance",
+            "link": "#",
+            "time": "13:45",
+            "ticker": symbol,
+            "summary": f"Consensus Wall Street price targets for {symbol} were revised upward by major sell-side research firms following optimistic supply chain reports and accelerating operating profit margins."
+        },
+        {
+            "title": "Global Semiconductor & Hardware Supply Chain Demand Expands",
+            "publisher": "Financial Times",
+            "link": "#",
+            "time": "13:12",
+            "ticker": "TECH",
+            "summary": "Global hardware manufacturing order books show sustained multi-quarter growth driven by enterprise infrastructure investments and next-generation datacenter hardware deployments."
+        },
+        {
+            "title": "Treasury Yields Stabilize Near 4.25% Benchmark Level",
+            "publisher": "Bloomberg Bond Desk",
+            "link": "#",
+            "time": "12:50",
+            "ticker": "BONDS",
+            "summary": "Benchmark U.S. 10-Year Treasury yields held steady following the latest government debt auction. Credit markets saw strong demand from long-term sovereign wealth funds and domestic asset managers."
+        }
     ]
 
 @st.cache_data(ttl=300)
