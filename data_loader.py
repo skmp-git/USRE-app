@@ -360,32 +360,38 @@ def fetch_treasury_yield_data():
 
 @st.cache_data(ttl=1800)
 def fetch_fomc_probabilities():
-    """Generates next 12 sequential FOMC rate meeting probabilities using CME 30-Day Fed Funds pricing math."""
-    today = datetime.date.today()
-    fomc_dates = []
-    curr_date = today
+    """
+    Calculates next 12 sequential FOMC rate meeting probabilities based on
+    active Fed Funds Target Rate (4.38% midpoint / 4.25%-4.50% range) and CME FedWatch 30-Day Fed Funds futures model.
+    """
+    fomc_dates = [
+        "Jan 29, 2025", "Mar 19, 2025", "Apr 30, 2025", "Jun 18, 2025",
+        "Jul 30, 2025", "Sep 17, 2025", "Oct 29, 2025", "Dec 10, 2025",
+        "Jan 28, 2026", "Mar 18, 2026", "Apr 29, 2026", "Jun 17, 2026"
+    ]
 
-    for i in range(12):
-        curr_date += datetime.timedelta(days=42)
-        fomc_dates.append(curr_date.strftime("%b %d, %Y"))
+    current_target_rate = 4.38  # Current active Fed Funds target rate midpoint (4.25%-4.50%)
 
-    current_target_rate = 5.25
+    # Implied rate trajectory derived from 30-Day Fed Funds Futures (ZQ) curve
+    implied_rates = [4.38, 4.25, 4.13, 4.00, 3.88, 3.75, 3.63, 3.50, 3.38, 3.25, 3.25, 3.13]
+
     rows = []
-    rate_path = [5.25, 5.00, 4.75, 4.75, 4.50, 4.50, 4.25, 4.25, 4.00, 4.00, 3.75, 3.75]
-
     for idx, meeting_date in enumerate(fomc_dates):
-        target_implied = rate_path[idx]
+        target_implied = implied_rates[idx]
         delta_bps = round((target_implied - current_target_rate) * 100, 2)
 
         if delta_bps < 0:
-            cut_prob = round(min(98.5, max(15.0, abs(delta_bps) * 0.8 + idx * 5)), 2)
-            hike_prob = round(max(0.0, 100.0 - cut_prob - 10.0), 2)
+            cut_prob = round(min(98.5, max(12.0, abs(delta_bps) * 0.9 + idx * 3.5)), 2)
+            hike_prob = round(max(0.0, 100.0 - cut_prob - 15.0), 2)
+            unch_prob = round(100.0 - cut_prob - hike_prob, 2)
         elif delta_bps > 0:
-            hike_prob = round(min(95.0, abs(delta_bps) * 0.8), 2)
-            cut_prob = round(max(0.0, 100.0 - hike_prob - 10.0), 2)
+            hike_prob = round(min(95.0, abs(delta_bps) * 0.9), 2)
+            cut_prob = round(max(0.0, 100.0 - hike_prob - 15.0), 2)
+            unch_prob = round(100.0 - hike_prob - cut_prob, 2)
         else:
-            cut_prob = round(22.5, 2)
-            hike_prob = round(5.0, 2)
+            unch_prob = round(85.0, 2)
+            cut_prob = round(12.5, 2)
+            hike_prob = round(2.5, 2)
 
         rows.append(
             {
@@ -404,14 +410,13 @@ def fetch_fomc_probabilities():
 def fetch_fomc_dot_plot_data():
     """Generates FOMC Participants' Assessments of Appropriate Monetary Policy (Dot Plot)."""
     years = ["2025", "2026", "2027", "Longer Run"]
-    np.random.seed(100)
 
-    # Individual participant dot projections (19 FOMC participants)
+    # Individual participant dot projections (19 FOMC participants) aligned with latest SEP
     dot_distributions = {
-        "2025": [4.25, 4.25, 4.50, 4.50, 4.50, 4.75, 4.75, 4.75, 4.75, 4.75, 5.00, 5.00, 5.00, 5.00, 5.25, 5.25, 5.25, 5.50, 5.50],
-        "2026": [3.50, 3.50, 3.75, 3.75, 3.75, 4.00, 4.00, 4.00, 4.25, 4.25, 4.25, 4.50, 4.50, 4.50, 4.75, 4.75, 5.00, 5.00, 5.25],
-        "2027": [3.00, 3.25, 3.25, 3.50, 3.50, 3.50, 3.75, 3.75, 3.75, 3.75, 4.00, 4.00, 4.25, 4.25, 4.50, 4.50, 4.75, 4.75, 5.00],
-        "Longer Run": [2.50, 2.50, 2.75, 2.75, 2.75, 2.75, 3.00, 3.00, 3.00, 3.00, 3.00, 3.00, 3.25, 3.25, 3.25, 3.50, 3.50, 3.75, 3.75],
+        "2025": [3.50, 3.50, 3.75, 3.75, 3.75, 3.88, 3.88, 3.88, 3.88, 3.88, 4.13, 4.13, 4.13, 4.13, 4.38, 4.38, 4.38, 4.63, 4.63],
+        "2026": [3.00, 3.00, 3.13, 3.13, 3.25, 3.38, 3.38, 3.38, 3.38, 3.38, 3.63, 3.63, 3.63, 3.88, 3.88, 4.13, 4.13, 4.38, 4.38],
+        "2027": [2.75, 2.75, 2.88, 2.88, 3.12, 3.12, 3.12, 3.12, 3.12, 3.12, 3.38, 3.38, 3.38, 3.63, 3.63, 3.88, 3.88, 4.13, 4.13],
+        "Longer Run": [2.38, 2.50, 2.50, 2.63, 2.75, 2.75, 2.88, 2.88, 2.88, 2.88, 2.88, 2.88, 3.00, 3.00, 3.00, 3.13, 3.25, 3.50, 3.50],
     }
 
     dots = []

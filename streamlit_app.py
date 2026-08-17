@@ -13,29 +13,29 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Clean Light/White Theme Financial Aesthetic CSS
+# Dark Mode Terminal Aesthetic CSS
 CUSTOM_CSS = """
 <style>
-    /* Clean Light/White Base Theme */
+    /* Dark Mode Base Theme */
     .stApp {
-        background-color: #FFFFFF;
-        color: #111827;
+        background-color: #0E1117;
+        color: #F3F4F6;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, sans-serif;
     }
 
     /* Top Navigation Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background-color: #F1F5F9;
+        background-color: #1E222D;
         padding: 8px 12px;
         border-radius: 8px;
-        border: 1px solid #E2E8F0;
+        border: 1px solid #2A2E39;
     }
 
     .stTabs [data-baseweb="tab"] {
         height: 42px;
         border-radius: 6px;
-        color: #4B5563;
+        color: #9CA3AF;
         font-weight: 600;
         font-size: 0.95rem;
         background-color: transparent;
@@ -44,10 +44,10 @@ CUSTOM_CSS = """
     }
 
     .stTabs [aria-selected="true"] {
-        background-color: #FFFFFF !important;
-        color: #2563EB !important;
-        border-bottom: 2.5px solid #2563EB !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        background-color: #2A2E39 !important;
+        color: #3B82F6 !important;
+        border-bottom: 2.5px solid #3B82F6 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 
     /* Header Bar */
@@ -55,15 +55,15 @@ CUSTOM_CSS = """
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: linear-gradient(90deg, #F8FAFC 0%, #EFF6FF 100%);
+        background: linear-gradient(90deg, #131722 0%, #1E222D 100%);
         padding: 14px 24px;
         border-radius: 8px;
-        border: 1px solid #E2E8F0;
+        border: 1px solid #2A2E39;
         margin-bottom: 20px;
     }
 
     .terminal-title {
-        color: #1E3A8A;
+        color: #60A5FA;
         font-size: 1.4rem;
         font-weight: 800;
         letter-spacing: 0.5px;
@@ -75,19 +75,19 @@ CUSTOM_CSS = """
 
     .terminal-status {
         font-size: 0.85rem;
-        color: #059669;
-        background: rgba(5, 150, 105, 0.1);
+        color: #10B981;
+        background: rgba(16, 185, 129, 0.15);
         padding: 4px 12px;
         border-radius: 12px;
-        border: 1px solid rgba(5, 150, 105, 0.3);
+        border: 1px solid rgba(16, 185, 129, 0.4);
         font-weight: 600;
         font-family: monospace;
     }
 
     /* Metric Cards and Accordion Styling */
     .stExpander {
-        background-color: #F8FAFC !important;
-        border: 1px solid #E2E8F0 !important;
+        background-color: #131722 !important;
+        border: 1px solid #2A2E39 !important;
         border-radius: 8px !important;
         margin-bottom: 12px !important;
     }

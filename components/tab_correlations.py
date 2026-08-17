@@ -50,13 +50,13 @@ def render_correlations_tab(corr_dict):
     )
 
     fig_heatmap.update_layout(
-        template="plotly_white",
-        paper_bgcolor="#FFFFFF",
-        plot_bgcolor="#F8FAFC",
+        template="plotly_dark",
+        paper_bgcolor="#131722",
+        plot_bgcolor="#1E222D",
         height=850,
         margin=dict(l=150, r=40, t=40, b=150),
-        xaxis=dict(tickangle=-45, showgrid=False, title_font=dict(color="#111827"), tickfont=dict(color="#111827", size=10)),
-        yaxis=dict(showgrid=False, autorange="reversed", title_font=dict(color="#111827"), tickfont=dict(color="#111827", size=10)),
+        xaxis=dict(tickangle=-45, showgrid=False, tickfont=dict(color="#F3F4F6", size=10)),
+        yaxis=dict(showgrid=False, autorange="reversed", tickfont=dict(color="#F3F4F6", size=10)),
     )
 
     st.plotly_chart(fig_heatmap, use_container_width=True)
@@ -86,13 +86,13 @@ def render_correlations_tab(corr_dict):
     )
 
     fig_dendro.update_layout(
-        template="plotly_white",
-        paper_bgcolor="#FFFFFF",
-        plot_bgcolor="#F8FAFC",
+        template="plotly_dark",
+        paper_bgcolor="#131722",
+        plot_bgcolor="#1E222D",
         height=550,
         margin=dict(l=40, r=40, t=40, b=140),
-        xaxis=dict(title="ETF Asset Class Proxies", tickangle=-45, showgrid=False, title_font=dict(color="#111827"), tickfont=dict(color="#111827", size=10)),
-        yaxis=dict(title="Correlation Distance (Ward's Linkage)", showgrid=True, gridcolor="#E2E8F0", title_font=dict(color="#111827"), tickfont=dict(color="#111827")),
+        xaxis=dict(title=dict(text="ETF Asset Class Proxies", font=dict(color="#F3F4F6")), tickangle=-45, showgrid=False, tickfont=dict(color="#F3F4F6", size=10)),
+        yaxis=dict(title=dict(text="Correlation Distance (Ward's Linkage)", font=dict(color="#F3F4F6")), showgrid=True, gridcolor="#2A2E39", tickfont=dict(color="#F3F4F6")),
     )
 
     st.plotly_chart(fig_dendro, use_container_width=True)

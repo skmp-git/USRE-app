@@ -67,9 +67,9 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
         )
 
         fig_curve.update_layout(
-            template="plotly_white",
-            paper_bgcolor="#FFFFFF",
-            plot_bgcolor="#F8FAFC",
+            template="plotly_dark",
+            paper_bgcolor="#131722",
+            plot_bgcolor="#1E222D",
             height=420,
             margin=dict(l=40, r=40, t=30, b=40),
             hovermode="x unified",
@@ -79,24 +79,22 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 y=1.02,
                 xanchor="right",
                 x=1,
-                font=dict(size=12, color="#111827"),
+                font=dict(size=12, color="#F3F4F6"),
             ),
             xaxis=dict(
-                title="Maturity Tenor Bucket",
+                title=dict(text="Maturity Tenor Bucket", font=dict(color="#F3F4F6")),
                 showgrid=True,
-                gridcolor="#E2E8F0",
+                gridcolor="#2A2E39",
                 zeroline=False,
-                title_font=dict(color="#111827"),
-                tickfont=dict(color="#111827"),
+                tickfont=dict(color="#F3F4F6"),
             ),
             yaxis=dict(
-                title="Yield to Maturity (%)",
+                title=dict(text="Yield to Maturity (%)", font=dict(color="#F3F4F6")),
                 ticksuffix="%",
                 showgrid=True,
-                gridcolor="#E2E8F0",
+                gridcolor="#2A2E39",
                 zeroline=False,
-                title_font=dict(color="#111827"),
-                tickfont=dict(color="#111827"),
+                tickfont=dict(color="#F3F4F6"),
             ),
         )
 
@@ -138,11 +136,11 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
 
         b_col4.markdown(
             f"""
-            <div style="background-color: {regime_info['badge_bg']}; border: 1.5px solid {regime_info['color']}; border-radius: 8px; padding: 12px 16px; margin-top: 4px;">
+            <div style="background-color: #1F2937; border: 1.5px solid {regime_info['color']}; border-radius: 8px; padding: 12px 16px; margin-top: 4px;">
                 <span style="color: {regime_info['color']}; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px;">
                     ⚡ Active Regime: {regime_info['regime']}
                 </span>
-                <p style="color: #374151; font-size: 0.85rem; margin: 4px 0 0 0;">
+                <p style="color: #D1D5DB; font-size: 0.85rem; margin: 4px 0 0 0;">
                     {regime_info['description']}
                 </p>
             </div>
@@ -151,7 +149,7 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
         )
 
         fig_spread = go.Figure()
-        colors = ["#059669" if val >= 0 else "#DC2626" for val in shifts_df["Spread_Change_bps"]]
+        colors = ["#10B981" if val >= 0 else "#EF4444" for val in shifts_df["Spread_Change_bps"]]
 
         fig_spread.add_trace(
             go.Bar(
@@ -164,13 +162,13 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
         )
 
         fig_spread.update_layout(
-            template="plotly_white",
-            paper_bgcolor="#FFFFFF",
-            plot_bgcolor="#F8FAFC",
+            template="plotly_dark",
+            paper_bgcolor="#131722",
+            plot_bgcolor="#1E222D",
             height=300,
             margin=dict(l=40, r=40, t=20, b=30),
-            xaxis=dict(title="Time Horizon", showgrid=False, title_font=dict(color="#111827"), tickfont=dict(color="#111827")),
-            yaxis=dict(title="10Y - 2Y Spread Shift (bps)", ticksuffix=" bps", showgrid=True, gridcolor="#E2E8F0", title_font=dict(color="#111827"), tickfont=dict(color="#111827")),
+            xaxis=dict(title=dict(text="Time Horizon", font=dict(color="#F3F4F6")), showgrid=False, tickfont=dict(color="#F3F4F6")),
+            yaxis=dict(title=dict(text="10Y - 2Y Spread Shift (bps)", font=dict(color="#F3F4F6")), ticksuffix=" bps", showgrid=True, gridcolor="#2A2E39", tickfont=dict(color="#F3F4F6")),
             showlegend=False,
         )
 
@@ -252,29 +250,27 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
         )
 
         fig_dot.update_layout(
-            template="plotly_white",
-            paper_bgcolor="#FFFFFF",
-            plot_bgcolor="#F8FAFC",
+            template="plotly_dark",
+            paper_bgcolor="#131722",
+            plot_bgcolor="#1E222D",
             height=450,
             margin=dict(l=40, r=40, t=30, b=40),
             xaxis=dict(
                 tickmode="array",
                 tickvals=list(range(len(years_list))),
                 ticktext=years_list,
-                title="Forecast Horizon",
+                title=dict(text="Forecast Horizon", font=dict(color="#F3F4F6")),
                 showgrid=True,
-                gridcolor="#E2E8F0",
-                title_font=dict(color="#111827"),
-                tickfont=dict(color="#111827"),
+                gridcolor="#2A2E39",
+                tickfont=dict(color="#F3F4F6"),
             ),
             yaxis=dict(
-                title="Fed Funds Target Rate (%)",
+                title=dict(text="Fed Funds Target Rate (%)", font=dict(color="#F3F4F6")),
                 ticksuffix="%",
                 showgrid=True,
-                gridcolor="#E2E8F0",
+                gridcolor="#2A2E39",
                 dtick=0.25,
-                title_font=dict(color="#111827"),
-                tickfont=dict(color="#111827"),
+                tickfont=dict(color="#F3F4F6"),
             ),
             legend=dict(
                 orientation="h",
@@ -282,7 +278,7 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 y=1.02,
                 xanchor="right",
                 x=1,
-                font=dict(color="#111827"),
+                font=dict(color="#F3F4F6"),
             ),
         )
 
