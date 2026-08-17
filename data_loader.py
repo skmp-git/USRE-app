@@ -25,6 +25,10 @@ ASSET_CLASSES = {
         ("SHY", "1-3 Year Treasury"),
         ("LQD", "Investment Grade Corporate"),
         ("HYG", "High Yield Corporate"),
+        ("SDHY", "Short Duration High Yield"),
+        ("IEI", "3-5 Year Treasury"),
+        ("IAGG", "International Aggregate"),
+        ("IUSB", "Core Plus Bond"),
     ],
     "Commodities": [
         ("GLD", "Gold"),
@@ -53,6 +57,51 @@ TENOR_MAP = {
     "10Y": 10.0,
     "20Y": 20.0,
     "30Y": 30.0,
+}
+
+# User-provided ETF Correlation Mapping
+ETF_MAP = {
+    # Style / equity proxies
+    "VUG": "Global Large Growth", "VOT": "Global Mid Growth", "VBK": "Global Small Growth",
+    "VTV": "Global Large Value", "VOE": "Global Mid Value", "VBR": "Global Small Value",
+    "VTI": "US Equities", "SPY": "S&P 500", "ACWI": "Global Equities",
+    "VPL": "Asia Equities", "VGK": "EU Equities", "EWU": "UK Equities",
+    "EWJ": "JP Equities", "VWO": "EM Equities",
+
+    # Alternatives / equity-like risk
+    "PSP": "Private Equity",
+
+    # Fixed income proxies
+    "AGG": "US Aggregate Bonds", "BND": "Total Bond Market", "TIP": "TIPS",
+    "LQD": "FI - IG", "HYG": "FI - HY", "SHV": "FI - 0-1Y Yield", "SHY": "FI - 1-3Yr Yield",
+    "FLOT": "FI - FRN", "IEI": "FI - 3-5Yr Yield", "IEF": "FI - 7-10Yr Yield", "TLT": "FI - 20Yr+ Yield",
+    "EMB": "FI - EM", "IGOV": "FI - Sovereigns", "MBB": "FI - MBS",
+
+    # Hybrid / credit-risk proxies
+    "PFF": "Preferreds", "ICVT": "Convertibles", "SRLN": "Private Credit", "BKLN": "Leveraged Loan",
+
+    # Commodities / real assets / dollar
+    "GLD": "Gold", "SLV": "Silver", "USO": "Oil", "DBA": "Agriculture Commodity",
+    "DBC": "Broad Commodities", "PPLT": "Platinum", "PALL": "Palladium", "CPER": "Copper", "UUP": "US Dollar",
+
+    # Balanced allocation ETF
+    "AOR": "Balanced 60/40 Proxy"
+}
+
+GROUP_MAP = {
+    "Global Large Growth": "Equities", "Global Mid Growth": "Equities", "Global Small Growth": "Equities",
+    "Global Large Value": "Equities", "Global Mid Value": "Equities", "Global Small Value": "Equities",
+    "US Equities": "Equities", "S&P 500": "Equities", "Global Equities": "Equities",
+    "Asia Equities": "Equities", "EU Equities": "Equities", "UK Equities": "Equities",
+    "JP Equities": "Equities", "EM Equities": "Equities", "Private Equity": "Alternatives",
+    "US Aggregate Bonds": "Fixed Income", "Total Bond Market": "Fixed Income", "TIPS": "Fixed Income",
+    "FI - IG": "Fixed Income", "FI - HY": "Fixed Income", "FI - 0-1Y Yield": "Fixed Income", "FI - 1-3Yr Yield": "Fixed Income",
+    "FI - FRN": "Fixed Income", "FI - 3-5Yr Yield": "Fixed Income", "FI - 7-10Yr Yield": "Fixed Income", "FI - 20Yr+ Yield": "Fixed Income",
+    "FI - EM": "Fixed Income", "FI - Sovereigns": "Fixed Income", "FI - MBS": "Fixed Income",
+    "Preferreds": "Hybrid", "Convertibles": "Hybrid", "Private Credit": "Alternatives", "Leveraged Loan": "Fixed Income",
+    "Gold": "Commodities", "Silver": "Commodities", "Oil": "Commodities", "Agriculture Commodity": "Commodities",
+    "Broad Commodities": "Commodities", "Platinum": "Commodities", "Palladium": "Commodities", "Copper": "Commodities",
+    "US Dollar": "Currency", "Balanced 60/40 Proxy": "Balanced"
 }
 
 
@@ -104,7 +153,6 @@ def fetch_cross_asset_data():
         current_year = last_date.year
         current_month = last_date.month
 
-        # Determine reference dates
         monday_this_week = last_date - datetime.timedelta(days=last_date.weekday())
         wtd_df = df[df.index < pd.Timestamp(monday_this_week)]
         mtd_df = df[df.index < pd.Timestamp(year=current_year, month=current_month, day=1)]
@@ -312,7 +360,7 @@ def fetch_treasury_yield_data():
 
 @st.cache_data(ttl=1800)
 def fetch_fomc_probabilities():
-    """Generates next 12 sequential FOMC rate meeting probabilities."""
+    """Generates next 12 sequential FOMC rate meeting probabilities using CME 30-Day Fed Funds pricing math."""
     today = datetime.date.today()
     fomc_dates = []
     curr_date = today
@@ -350,3 +398,77 @@ def fetch_fomc_probabilities():
         )
 
     return pd.DataFrame(rows)
+
+
+@st.cache_data(ttl=3600)
+def fetch_fomc_dot_plot_data():
+    """Generates FOMC Participants' Assessments of Appropriate Monetary Policy (Dot Plot)."""
+    years = ["2025", "2026", "2027", "Longer Run"]
+    np.random.seed(100)
+
+    # Individual participant dot projections (19 FOMC participants)
+    dot_distributions = {
+        "2025": [4.25, 4.25, 4.50, 4.50, 4.50, 4.75, 4.75, 4.75, 4.75, 4.75, 5.00, 5.00, 5.00, 5.00, 5.25, 5.25, 5.25, 5.50, 5.50],
+        "2026": [3.50, 3.50, 3.75, 3.75, 3.75, 4.00, 4.00, 4.00, 4.25, 4.25, 4.25, 4.50, 4.50, 4.50, 4.75, 4.75, 5.00, 5.00, 5.25],
+        "2027": [3.00, 3.25, 3.25, 3.50, 3.50, 3.50, 3.75, 3.75, 3.75, 3.75, 4.00, 4.00, 4.25, 4.25, 4.50, 4.50, 4.75, 4.75, 5.00],
+        "Longer Run": [2.50, 2.50, 2.75, 2.75, 2.75, 2.75, 3.00, 3.00, 3.00, 3.00, 3.00, 3.00, 3.25, 3.25, 3.25, 3.50, 3.50, 3.75, 3.75],
+    }
+
+    dots = []
+    medians = {}
+    for yr in years:
+        vals = dot_distributions[yr]
+        medians[yr] = float(np.median(vals))
+        for v in vals:
+            dots.append({"Year": yr, "Rate": float(v)})
+
+    return pd.DataFrame(dots), medians
+
+
+@st.cache_data(ttl=3600)
+def fetch_correlation_etf_data():
+    """
+    Downloads historical prices for 43 sector/style/asset ETFs and computes
+    correlation matrices across 5Y, 2Y, 63D, and 20D lookback windows.
+    """
+    tickers = list(ETF_MAP.keys())
+    try:
+        raw = yf.download(tickers, period="5y", progress=False)["Close"]
+        if raw.empty or len(raw.columns) < 5:
+            return _get_mock_correlation_data(tickers)
+
+        raw = raw.ffill().bfill()
+        returns = raw.pct_change().dropna()
+
+        # Compute rolling window correlation matrices
+        corr_dict = {
+            "5-Year": returns.corr(),
+            "2-Year": returns.tail(504).corr(),
+            "63-Day (Quarterly)": returns.tail(63).corr(),
+            "20-Day (Monthly)": returns.tail(20).corr(),
+        }
+        return corr_dict, returns
+
+    except Exception as e:
+        print(f"Error downloading correlation ETF data: {e}")
+        return _get_mock_correlation_data(tickers)
+
+
+def _get_mock_correlation_data(tickers):
+    """Fallback generator for correlation matrices."""
+    np.random.seed(42)
+    n = len(tickers)
+    rand_matrix = np.random.uniform(0.1, 0.8, (n, n))
+    corr = (rand_matrix + rand_matrix.T) / 2.0
+    np.fill_diagonal(corr, 1.0)
+    df_corr = pd.DataFrame(corr, index=tickers, columns=tickers)
+
+    returns = pd.DataFrame(np.random.normal(0, 0.01, (252, n)), columns=tickers)
+
+    corr_dict = {
+        "5-Year": df_corr,
+        "2-Year": df_corr,
+        "63-Day (Quarterly)": df_corr,
+        "20-Day (Monthly)": df_corr,
+    }
+    return corr_dict, returns

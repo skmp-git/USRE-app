@@ -3,6 +3,7 @@ import streamlit as st
 import data_loader
 from components.tab_cross_asset import render_cross_asset_tab
 from components.tab_treasury_fedwatch import render_treasury_fedwatch_tab
+from components.tab_correlations import render_correlations_tab
 
 # Streamlit Page Configuration
 st.set_page_config(
@@ -121,12 +122,15 @@ def main():
         df_cross_asset = data_loader.fetch_cross_asset_data()
         yield_curves_df, daily_shifts_df, weekly_shifts_df = data_loader.fetch_treasury_yield_data()
         fomc_df = data_loader.fetch_fomc_probabilities()
+        dot_plot_df, dot_medians = data_loader.fetch_fomc_dot_plot_data()
+        corr_dict, _ = data_loader.fetch_correlation_etf_data()
 
-    # Top-level Horizontal Tab Navigation
-    tab1, tab2 = st.tabs(
+    # Top-level Horizontal Tab Navigation (3 Tabs)
+    tab1, tab2, tab3 = st.tabs(
         [
             "🌐 Tab 1: Cross-Asset Sector Performance",
             "🏛️ Tab 2: Treasury Yield Curve & FOMC Rate Probabilities",
+            "🔀 Tab 3: Cross-Asset Correlations",
         ]
     )
 
@@ -134,7 +138,10 @@ def main():
         render_cross_asset_tab(df_cross_asset)
 
     with tab2:
-        render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts_df, fomc_df)
+        render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts_df, fomc_df, dot_plot_df, dot_medians)
+
+    with tab3:
+        render_correlations_tab(corr_dict)
 
 
 if __name__ == "__main__":
