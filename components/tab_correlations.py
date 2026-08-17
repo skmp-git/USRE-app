@@ -77,10 +77,23 @@ def render_correlations_tab(corr_dict):
     condensed_dist = ssd.squareform(dist_matrix, checks=False)
     linkage_matrix = sch.linkage(condensed_dist, method="ward")
 
+    # High-visibility vibrant colors for dark background
+    bright_dendro_colorscale = [
+        "#38BDF8",  # Bright Sky Blue
+        "#34D399",  # Bright Emerald
+        "#FBBF24",  # Bright Amber / Yellow
+        "#F87171",  # Bright Coral Red
+        "#A78BFA",  # Bright Violet / Purple
+        "#F472B6",  # Bright Pink
+        "#06B6D4",  # Bright Cyan
+        "#FB923C",  # Bright Orange
+    ]
+
     fig_dendro = ff.create_dendrogram(
         dist_matrix,
         orientation="bottom",
         labels=mapped_labels,
+        colorscale=bright_dendro_colorscale,
         linkagefun=lambda x: linkage_matrix,
         color_threshold=0.7,
     )
