@@ -189,10 +189,12 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
             use_container_width=True,
             column_config={
                 "Meeting Date": st.column_config.TextColumn("Meeting Date", help="Upcoming FOMC rate decision schedule"),
-                "Hike Probability (%)": st.column_config.TextColumn("Hike Probability (%)", help="Implied odds of a rate hike"),
-                "Cut Probability (%)": st.column_config.TextColumn("Cut Probability (%)", help="Implied odds of a rate cut"),
-                "Implied Policy Rate": st.column_config.TextColumn("Implied Policy Target Rate", help="Terminal policy target rate derived from Fed Funds futures"),
-                "Rate Change Delta (bps)": st.column_config.TextColumn("Expected Rate Shift (bps)", help="Expected basis point delta relative to active target rate"),
+                "Expected Hikes/Cuts": st.column_config.TextColumn("Expected Hikes/Cuts", help="Implied number of 25bps rate hikes or cuts"),
+                "Implied Policy Rate": st.column_config.TextColumn("Implied Policy Target Rate", help="Terminal policy target rate derived from 30-Day Fed Funds futures"),
+                "Rate Change Delta (bps)": st.column_config.TextColumn("Implied Δ (bps)", help="Expected basis point shift relative to active target rate"),
+                "Prob Unchanged": st.column_config.TextColumn("Prob Unchanged", help="Probability of no rate change"),
+                "Prob 25bp Move": st.column_config.TextColumn("Prob 25bp Move", help="Probability of a 25bps rate move"),
+                "Prob 50bp Move": st.column_config.TextColumn("Prob 50bp Move", help="Probability of a 50bps rate move"),
             },
             hide_index=True,
         )

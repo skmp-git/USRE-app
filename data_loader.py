@@ -1,6 +1,13 @@
+import calendar
 import datetime
+import logging
+import math
+from collections import defaultdict
+from datetime import date, timedelta
+
 import numpy as np
 import pandas as pd
+import pandas_datareader.data as web
 import streamlit as st
 import yfinance as yf
 
@@ -358,51 +365,259 @@ def fetch_treasury_yield_data():
         return _get_mock_treasury_yield_data()
 
 
+def _build_futures_tickers(ticker_base="ZQ", exchange="CBT", horizon=24):
+    """Generates CME/CBOT 30-Day Federal Funds Futures ticker strings and corresponding labels."""
+    month_codes = {1: "F", 2: "G", 3: "H", 4: "J", 5: "K", 6: "M", 7: "N", 8: "Q", 9: "U", 10: "V", 11: "X", 12: "Z"}
+    start_date = pd.Timestamp.now().to_period("M").to_timestamp()
+    date_series = pd.date_range(start=start_date, periods=horizon, freq="MS")
+    tickers = [f"{ticker_base}{month_codes[d.month]}{str(d.year)[-2:]}.{exchange}" for d in date_series]
+    labels = [f"{d.strftime('%b')} {d.year}" for d in date_series]
+    return tickers, labels
+
+
+def fetch_ff_futures_data():
+    """Fetches Fed Funds Futures (ZQ) and EFFR (DFF from FRED)."""
+    yf_logger = logging.getLogger("yfinance")
+    original_level = yf_logger.level
+    yf_logger.setLevel(logging.CRITICAL)
+
+    tickers, labels = _build_futures_tickers("ZQ", "CBT", 24)
+
+    try:
+        raw_closes = yf.download(tickers, period="5d", auto_adjust=False, progress=False)["Close"]
+    except Exception:
+        try:
+            raw_closes = yf.download(tickers, period="5d", auto_adjust=False, progress=False)
+            if isinstance(raw_closes, pd.DataFrame) and "Close" in raw_closes.columns:
+                raw_closes = raw_closes["Close"]
+        except Exception:
+            raw_closes = pd.DataFrame()
+
+    yf_logger.setLevel(original_level)
+
+    futures_list = []
+    if isinstance(raw_closes, pd.DataFrame) and not raw_closes.empty:
+        for ticker, label in zip(tickers, labels):
+            if ticker in raw_closes.columns:
+                series = raw_closes[ticker].dropna()
+                if not series.empty:
+                    price = series.iloc[-1]
+                    futures_list.append(
+                        {
+                            "contract": label,
+                            "ticker": ticker,
+                            "price": price,
+                            "implied_rate": 100 - price,
+                        }
+                    )
+    elif isinstance(raw_closes, pd.Series) and not raw_closes.empty:
+        series = raw_closes.dropna()
+        if not series.empty and len(tickers) > 0:
+            price = series.iloc[-1]
+            futures_list.append(
+                {
+                    "contract": labels[0],
+                    "ticker": tickers[0],
+                    "price": price,
+                    "implied_rate": 100 - price,
+                }
+            )
+
+    ff_df = pd.DataFrame(futures_list)
+
+    try:
+        effr_series = web.DataReader("DFF", "fred", start=datetime.datetime.now() - timedelta(days=10))
+        effr_val = float(effr_series.iloc[-1].iloc[0]) if isinstance(effr_series.iloc[-1], pd.Series) else float(effr_series.iloc[-1])
+    except Exception:
+        effr_val = 4.33
+
+    return ff_df, effr_val
+
+
+def get_dynamic_fomc_dates(num_upcoming=12):
+    """Calculates upcoming FOMC meeting dates algorithmically."""
+    today = date.today()
+    future_dates = []
+    standard_months = [1, 3, 5, 6, 7, 9, 11, 12]
+    start_year = today.year
+
+    for year in range(start_year, start_year + 3):
+        for month in standard_months:
+            num_days = calendar.monthrange(year, month)[1]
+            wednesdays = []
+            for day in range(1, num_days + 1):
+                d = date(year, month, day)
+                if d.weekday() == 2:
+                    wednesdays.append(d)
+
+            if not wednesdays:
+                continue
+
+            if month in [3, 5, 11] and len(wednesdays) >= 4:
+                fomc_day = wednesdays[-2]
+            else:
+                fomc_day = wednesdays[-1]
+
+            if fomc_day > today:
+                future_dates.append(fomc_day)
+
+    future_dates = sorted(list(set(future_dates)))
+    return future_dates[:num_upcoming]
+
+
+def compute_fedwatch(ff_df, current_effr):
+    """Calculates CME FedWatch FOMC meeting probabilities from 30-Day Fed Funds futures."""
+    if ff_df.empty or current_effr is None:
+        return pd.DataFrame()
+
+    contracts_dict = dict(zip(ff_df["contract"], ff_df["implied_rate"]))
+    fomc_dates = get_dynamic_fomc_dates()
+
+    EFFR_TARGET_SPREAD = 0.045
+    month_key = lambda d: f"{d.strftime('%b')} {d.year}"
+
+    results = []
+    prev_post_rate = None
+    prev_mtg = None
+    cum_prob_dist = {0: 1.0}
+
+    for mtg in fomc_dates:
+        mk = month_key(mtg)
+        if mk not in contracts_dict:
+            prev_post_rate = None
+            prev_mtg = mtg
+            continue
+
+        month_rate = contracts_dict[mk]
+        days_in_month = calendar.monthrange(mtg.year, mtg.month)[1]
+        d_b = mtg.day
+        d_a = days_in_month - d_b
+
+        prior_month = mtg.month - 1 if mtg.month > 1 else 12
+        prior_year = mtg.year if mtg.month > 1 else mtg.year - 1
+        prior_key = month_key(date(prior_year, prior_month, 1))
+
+        use_chain = (
+            prev_post_rate is not None
+            and prev_mtg is not None
+            and prev_mtg.year == mtg.year
+            and prev_mtg.month == mtg.month
+        )
+        if use_chain:
+            pre_rate = prev_post_rate
+        elif prior_key in contracts_dict:
+            pre_rate = contracts_dict[prior_key]
+        elif prev_post_rate is not None:
+            pre_rate = prev_post_rate
+        else:
+            pre_rate = current_effr
+
+        next_month = mtg.month + 1 if mtg.month < 12 else 1
+        next_year = mtg.year if mtg.month < 12 else mtg.year + 1
+        next_key = month_key(date(next_year, next_month, 1))
+
+        next_mtgs = [m for m in fomc_dates if m.year == next_year and m.month == next_month]
+        has_next_month_mtg = len(next_mtgs) > 0
+        next_mtg_day = next_mtgs[0].day if has_next_month_mtg else 31
+
+        if not has_next_month_mtg and next_key in contracts_dict:
+            post_rate = contracts_dict[next_key]
+        elif d_a <= 10 and next_key in contracts_dict and next_mtg_day >= 15:
+            post_rate = contracts_dict[next_key]
+        elif d_a <= 10 and next_key not in contracts_dict:
+            post_rate = month_rate
+        else:
+            if d_a == 0:
+                d_a = 1
+            post_rate = (month_rate * days_in_month - pre_rate * d_b) / d_a
+
+        if post_rate < 0 or abs(post_rate - month_rate) > 0.75:
+            post_rate = contracts_dict.get(next_key, month_rate)
+
+        delta_marginal = (post_rate - pre_rate) * 100
+        m_marginal = delta_marginal / 25.0
+
+        lower_step = math.floor(m_marginal)
+        upper_step = lower_step + 1
+        prob_upper = m_marginal - lower_step
+        prob_lower = 1.0 - prob_upper
+
+        marginal_probs = {lower_step * 25: prob_lower, upper_step * 25: prob_upper}
+
+        new_cum_dist = defaultdict(float)
+        for cum_bp, cum_prob in cum_prob_dist.items():
+            for marg_bp, marg_prob in marginal_probs.items():
+                new_cum_dist[cum_bp + marg_bp] += cum_prob * marg_prob
+        cum_prob_dist = dict(new_cum_dist)
+
+        p_25 = sum(p for bp, p in marginal_probs.items() if abs(bp) == 25)
+        p_50 = sum(p for bp, p in marginal_probs.items() if abs(bp) == 50)
+        expected_cum_bp = sum(bp * p for bp, p in cum_prob_dist.items())
+        cm = expected_cum_bp / 25.0
+
+        if abs(cm) < 0.05:
+            hike_cut_label = "—"
+        elif cm < 0:
+            hike_cut_label = f"{abs(cm):.1f} cuts"
+        else:
+            hike_cut_label = f"{cm:.1f} hikes"
+
+        p0_val = (1.0 - (p_25 + p_50)) * 100
+
+        results.append(
+            {
+                "Meeting Date": mtg.strftime("%b %d, %Y"),
+                "Expected Hikes/Cuts": hike_cut_label,
+                "Implied Policy Rate": f"{post_rate + EFFR_TARGET_SPREAD:.3f}%",
+                "Rate Change Delta (bps)": f"{delta_marginal:+.1f} bps",
+                "Prob Unchanged": f"{p0_val:.0f}%",
+                "Prob 25bp Move": f"{p_25 * 100:.0f}%",
+                "Prob 50bp Move": f"{p_50 * 100:.0f}%",
+            }
+        )
+        prev_post_rate = post_rate
+        prev_mtg = mtg
+
+    return pd.DataFrame(results)
+
+
 @st.cache_data(ttl=1800)
 def fetch_fomc_probabilities():
     """
-    Calculates next 12 sequential FOMC rate meeting probabilities based on
-    active Fed Funds Target Rate (4.38% midpoint / 4.25%-4.50% range) and CME FedWatch 30-Day Fed Funds futures model.
+    Fetches Fed Funds Futures and EFFR, then computes dynamic CME FedWatch probabilities.
+    Fallback to static table if futures strip is unavailable.
     """
+    try:
+        ff_df, current_effr = fetch_ff_futures_data()
+        fedwatch_df = compute_fedwatch(ff_df, current_effr)
+        if not fedwatch_df.empty:
+            return fedwatch_df
+    except Exception as e:
+        print(f"Error computing dynamic FedWatch: {e}")
+
+    # Fallback static table
     fomc_dates = [
         "Jan 29, 2025", "Mar 19, 2025", "Apr 30, 2025", "Jun 18, 2025",
         "Jul 30, 2025", "Sep 17, 2025", "Oct 29, 2025", "Dec 10, 2025",
         "Jan 28, 2026", "Mar 18, 2026", "Apr 29, 2026", "Jun 17, 2026"
     ]
-
-    current_target_rate = 4.38  # Current active Fed Funds target rate midpoint (4.25%-4.50%)
-
-    # Implied rate trajectory derived from 30-Day Fed Funds Futures (ZQ) curve
+    current_target_rate = 4.38
     implied_rates = [4.38, 4.25, 4.13, 4.00, 3.88, 3.75, 3.63, 3.50, 3.38, 3.25, 3.25, 3.13]
-
     rows = []
     for idx, meeting_date in enumerate(fomc_dates):
         target_implied = implied_rates[idx]
         delta_bps = round((target_implied - current_target_rate) * 100, 2)
-
-        if delta_bps < 0:
-            cut_prob = round(min(98.5, max(12.0, abs(delta_bps) * 0.9 + idx * 3.5)), 2)
-            hike_prob = round(max(0.0, 100.0 - cut_prob - 15.0), 2)
-            unch_prob = round(100.0 - cut_prob - hike_prob, 2)
-        elif delta_bps > 0:
-            hike_prob = round(min(95.0, abs(delta_bps) * 0.9), 2)
-            cut_prob = round(max(0.0, 100.0 - hike_prob - 15.0), 2)
-            unch_prob = round(100.0 - hike_prob - cut_prob, 2)
-        else:
-            unch_prob = round(85.0, 2)
-            cut_prob = round(12.5, 2)
-            hike_prob = round(2.5, 2)
-
         rows.append(
             {
                 "Meeting Date": meeting_date,
-                "Hike Probability (%)": f"{hike_prob:.2f}%",
-                "Cut Probability (%)": f"{cut_prob:.2f}%",
-                "Implied Policy Rate": f"{target_implied:.2f}%",
-                "Rate Change Delta (bps)": f"{delta_bps:+.2f} bps",
+                "Expected Hikes/Cuts": f"{abs(delta_bps/25):.1f} cuts" if delta_bps < 0 else "—",
+                "Implied Policy Rate": f"{target_implied:.3f}%",
+                "Rate Change Delta (bps)": f"{delta_bps:+.1f} bps",
+                "Prob Unchanged": "15%",
+                "Prob 25bp Move": "80%",
+                "Prob 50bp Move": "5%",
             }
         )
-
     return pd.DataFrame(rows)
 
 
@@ -411,7 +626,6 @@ def fetch_fomc_dot_plot_data():
     """Generates FOMC Participants' Assessments of Appropriate Monetary Policy (Dot Plot)."""
     years = ["2025", "2026", "2027", "Longer Run"]
 
-    # Individual participant dot projections (19 FOMC participants) aligned with latest SEP
     dot_distributions = {
         "2025": [3.50, 3.50, 3.75, 3.75, 3.75, 3.88, 3.88, 3.88, 3.88, 3.88, 4.13, 4.13, 4.13, 4.13, 4.38, 4.38, 4.38, 4.63, 4.63],
         "2026": [3.00, 3.00, 3.13, 3.13, 3.25, 3.38, 3.38, 3.38, 3.38, 3.38, 3.63, 3.63, 3.63, 3.88, 3.88, 4.13, 4.13, 4.38, 4.38],
@@ -445,7 +659,6 @@ def fetch_correlation_etf_data():
         raw = raw.ffill().bfill()
         returns = raw.pct_change().dropna()
 
-        # Compute rolling window correlation matrices
         corr_dict = {
             "5-Year": returns.corr(),
             "2-Year": returns.tail(504).corr(),
