@@ -15,6 +15,6 @@ echo Installing/updating dependencies...
 python -m pip install --no-cache-dir --disable-pip-version-check -r requirements.txt
 
 echo Launching Financial Market Dashboard...
-python -m streamlit run streamlit_app.py --no-cache-dir
+python -m streamlit run streamlit_app.py
 
 pause
