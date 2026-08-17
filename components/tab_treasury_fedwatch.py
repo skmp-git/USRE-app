@@ -34,8 +34,8 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 y=curr_yields,
                 mode="lines+markers",
                 name="Current (Live / Close)",
-                line=dict(color="#00F0FF", width=4),
-                marker=dict(size=8, color="#00F0FF"),
+                line=dict(color="#2563EB", width=4),
+                marker=dict(size=8, color="#2563EB"),
                 hovertemplate="<b>Tenor:</b> %{x}<br><b>Current Yield:</b> %{y:.2f}%<extra></extra>",
             )
         )
@@ -47,8 +47,8 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 y=one_m_yields,
                 mode="lines+markers",
                 name="1 Month Ago",
-                line=dict(color="#F59E0B", width=2, dash="dash"),
-                marker=dict(size=6, color="#F59E0B"),
+                line=dict(color="#D97706", width=2.5, dash="dash"),
+                marker=dict(size=6, color="#D97706"),
                 hovertemplate="<b>Tenor:</b> %{x}<br><b>1M Ago Yield:</b> %{y:.2f}%<extra></extra>",
             )
         )
@@ -67,9 +67,9 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
         )
 
         fig_curve.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="#0E1117",
-            plot_bgcolor="#161B22",
+            template="plotly_white",
+            paper_bgcolor="#FFFFFF",
+            plot_bgcolor="#F8FAFC",
             height=420,
             margin=dict(l=40, r=40, t=30, b=40),
             hovermode="x unified",
@@ -79,20 +79,24 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 y=1.02,
                 xanchor="right",
                 x=1,
-                font=dict(size=12),
+                font=dict(size=12, color="#111827"),
             ),
             xaxis=dict(
                 title="Maturity Tenor Bucket",
                 showgrid=True,
-                gridcolor="#21262D",
+                gridcolor="#E2E8F0",
                 zeroline=False,
+                title_font=dict(color="#111827"),
+                tickfont=dict(color="#111827"),
             ),
             yaxis=dict(
                 title="Yield to Maturity (%)",
                 ticksuffix="%",
                 showgrid=True,
-                gridcolor="#21262D",
+                gridcolor="#E2E8F0",
                 zeroline=False,
+                title_font=dict(color="#111827"),
+                tickfont=dict(color="#111827"),
             ),
         )
 
@@ -138,7 +142,7 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 <span style="color: {regime_info['color']}; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px;">
                     ⚡ Active Regime: {regime_info['regime']}
                 </span>
-                <p style="color: #E5E7EB; font-size: 0.85rem; margin: 4px 0 0 0;">
+                <p style="color: #374151; font-size: 0.85rem; margin: 4px 0 0 0;">
                     {regime_info['description']}
                 </p>
             </div>
@@ -147,7 +151,7 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
         )
 
         fig_spread = go.Figure()
-        colors = ["#10B981" if val >= 0 else "#EF4444" for val in shifts_df["Spread_Change_bps"]]
+        colors = ["#059669" if val >= 0 else "#DC2626" for val in shifts_df["Spread_Change_bps"]]
 
         fig_spread.add_trace(
             go.Bar(
@@ -160,13 +164,13 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
         )
 
         fig_spread.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="#0E1117",
-            plot_bgcolor="#161B22",
+            template="plotly_white",
+            paper_bgcolor="#FFFFFF",
+            plot_bgcolor="#F8FAFC",
             height=300,
             margin=dict(l=40, r=40, t=20, b=30),
-            xaxis=dict(title="Time Horizon", showgrid=False),
-            yaxis=dict(title="10Y - 2Y Spread Shift (bps)", ticksuffix=" bps", showgrid=True, gridcolor="#21262D"),
+            xaxis=dict(title="Time Horizon", showgrid=False, title_font=dict(color="#111827"), tickfont=dict(color="#111827")),
+            yaxis=dict(title="10Y - 2Y Spread Shift (bps)", ticksuffix=" bps", showgrid=True, gridcolor="#E2E8F0", title_font=dict(color="#111827"), tickfont=dict(color="#111827")),
             showlegend=False,
         )
 
@@ -208,14 +212,12 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
     else:
         fig_dot = go.Figure()
 
-        # Add jitter to x coordinates to separate overlapping dots for the same rate
         years_list = ["2025", "2026", "2027", "Longer Run"]
         year_to_x = {y: idx for idx, y in enumerate(years_list)}
 
         np.random.seed(42)
         x_jittered = [year_to_x[row["Year"]] + np.random.uniform(-0.12, 0.12) for _, row in dot_plot_df.iterrows()]
 
-        # Scatter plot of participant dots
         fig_dot.add_trace(
             go.Scatter(
                 x=x_jittered,
@@ -224,8 +226,8 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 name="FOMC Participant Projections",
                 marker=dict(
                     size=11,
-                    color="#00F0FF",
-                    line=dict(width=1, color="#FFFFFF"),
+                    color="#2563EB",
+                    line=dict(width=1, color="#1E3A8A"),
                     opacity=0.85,
                 ),
                 text=[f"Horizon: {row['Year']}<br>Target Rate: {row['Rate']:.2f}%" for _, row in dot_plot_df.iterrows()],
@@ -233,7 +235,6 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
             )
         )
 
-        # Median Trajectory Line
         median_x = [year_to_x[y] for y in years_list]
         median_y = [dot_medians[y] for y in years_list]
 
@@ -243,17 +244,17 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 y=median_y,
                 mode="lines+markers",
                 name="Median Target Path",
-                line=dict(color="#EF4444", width=3, dash="solid"),
-                marker=dict(size=10, color="#EF4444", symbol="diamond"),
+                line=dict(color="#DC2626", width=3, dash="solid"),
+                marker=dict(size=10, color="#DC2626", symbol="diamond"),
                 hovertemplate="<b>Horizon:</b> %{text}<br><b>Median Rate:</b> %{y:.2f}%<extra></extra>",
                 text=years_list,
             )
         )
 
         fig_dot.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="#0E1117",
-            plot_bgcolor="#161B22",
+            template="plotly_white",
+            paper_bgcolor="#FFFFFF",
+            plot_bgcolor="#F8FAFC",
             height=450,
             margin=dict(l=40, r=40, t=30, b=40),
             xaxis=dict(
@@ -262,14 +263,18 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 ticktext=years_list,
                 title="Forecast Horizon",
                 showgrid=True,
-                gridcolor="#21262D",
+                gridcolor="#E2E8F0",
+                title_font=dict(color="#111827"),
+                tickfont=dict(color="#111827"),
             ),
             yaxis=dict(
                 title="Fed Funds Target Rate (%)",
                 ticksuffix="%",
                 showgrid=True,
-                gridcolor="#21262D",
+                gridcolor="#E2E8F0",
                 dtick=0.25,
+                title_font=dict(color="#111827"),
+                tickfont=dict(color="#111827"),
             ),
             legend=dict(
                 orientation="h",
@@ -277,6 +282,7 @@ def render_treasury_fedwatch_tab(yield_curves_df, daily_shifts_df, weekly_shifts
                 y=1.02,
                 xanchor="right",
                 x=1,
+                font=dict(color="#111827"),
             ),
         )
 

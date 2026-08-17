@@ -15,7 +15,6 @@ def render_correlations_tab(corr_dict):
 
     st.markdown("---")
 
-    # Timeframe selection dropdown
     selected_window = st.selectbox(
         "Select Correlation Lookback Horizon:",
         ["5-Year", "2-Year", "63-Day (Quarterly)", "20-Day (Monthly)"],
@@ -29,8 +28,8 @@ def render_correlations_tab(corr_dict):
         st.warning("Correlation matrix data unavailable.")
         return
 
-    labels = [f"{ticker} ({ETF_MAP.get(ticker, ticker)})" for ticker in corr_df.columns]
-    short_labels = [f"{ticker}: {ETF_MAP.get(ticker, ticker)[:15]}" for ticker in corr_df.columns]
+    # Use ONLY the mapped descriptive ETF names on the axes
+    mapped_labels = [ETF_MAP.get(ticker, ticker) for ticker in corr_df.columns]
 
     # ==========================================
     # SUBPLOT 1: ETF Correlation Heatmap
@@ -40,8 +39,8 @@ def render_correlations_tab(corr_dict):
     fig_heatmap = go.Figure(
         data=go.Heatmap(
             z=corr_df.values,
-            x=labels,
-            y=labels,
+            x=mapped_labels,
+            y=mapped_labels,
             colorscale="RdBu_r",
             zmin=-1.0,
             zmax=1.0,
@@ -51,13 +50,13 @@ def render_correlations_tab(corr_dict):
     )
 
     fig_heatmap.update_layout(
-        template="plotly_dark",
-        paper_bgcolor="#0E1117",
-        plot_bgcolor="#161B22",
+        template="plotly_white",
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#F8FAFC",
         height=850,
         margin=dict(l=150, r=40, t=40, b=150),
-        xaxis=dict(tickangle=-45, showgrid=False),
-        yaxis=dict(showgrid=False, autorange="reversed"),
+        xaxis=dict(tickangle=-45, showgrid=False, title_font=dict(color="#111827"), tickfont=dict(color="#111827", size=10)),
+        yaxis=dict(showgrid=False, autorange="reversed", title_font=dict(color="#111827"), tickfont=dict(color="#111827", size=10)),
     )
 
     st.plotly_chart(fig_heatmap, use_container_width=True)
@@ -81,19 +80,19 @@ def render_correlations_tab(corr_dict):
     fig_dendro = ff.create_dendrogram(
         dist_matrix,
         orientation="bottom",
-        labels=short_labels,
+        labels=mapped_labels,
         linkagefun=lambda x: linkage_matrix,
         color_threshold=0.7,
     )
 
     fig_dendro.update_layout(
-        template="plotly_dark",
-        paper_bgcolor="#0E1117",
-        plot_bgcolor="#161B22",
+        template="plotly_white",
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#F8FAFC",
         height=550,
         margin=dict(l=40, r=40, t=40, b=140),
-        xaxis=dict(title="ETF Asset Class Proxies", tickangle=-45, showgrid=False),
-        yaxis=dict(title="Correlation Distance (Ward's Linkage)", showgrid=True, gridcolor="#21262D"),
+        xaxis=dict(title="ETF Asset Class Proxies", tickangle=-45, showgrid=False, title_font=dict(color="#111827"), tickfont=dict(color="#111827", size=10)),
+        yaxis=dict(title="Correlation Distance (Ward's Linkage)", showgrid=True, gridcolor="#E2E8F0", title_font=dict(color="#111827"), tickfont=dict(color="#111827")),
     )
 
     st.plotly_chart(fig_dendro, use_container_width=True)

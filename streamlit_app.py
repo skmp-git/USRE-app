@@ -13,29 +13,29 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Dark-mode-first Financial Terminal Aesthetic CSS
+# Clean Light/White Theme Financial Aesthetic CSS
 CUSTOM_CSS = """
 <style>
-    /* Dark Terminal Base Theme */
+    /* Clean Light/White Base Theme */
     .stApp {
-        background-color: #0E1117;
-        color: #E5E7EB;
+        background-color: #FFFFFF;
+        color: #111827;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, sans-serif;
     }
 
     /* Top Navigation Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background-color: #161B22;
+        background-color: #F1F5F9;
         padding: 8px 12px;
         border-radius: 8px;
-        border: 1px solid #30363D;
+        border: 1px solid #E2E8F0;
     }
 
     .stTabs [data-baseweb="tab"] {
         height: 42px;
         border-radius: 6px;
-        color: #9CA3AF;
+        color: #4B5563;
         font-weight: 600;
         font-size: 0.95rem;
         background-color: transparent;
@@ -44,9 +44,10 @@ CUSTOM_CSS = """
     }
 
     .stTabs [aria-selected="true"] {
-        background-color: #21262D !important;
-        color: #00F0FF !important;
-        border-bottom: 2px solid #00F0FF !important;
+        background-color: #FFFFFF !important;
+        color: #2563EB !important;
+        border-bottom: 2.5px solid #2563EB !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
     /* Header Bar */
@@ -54,15 +55,15 @@ CUSTOM_CSS = """
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: linear-gradient(90deg, #161B22 0%, #0D1117 100%);
+        background: linear-gradient(90deg, #F8FAFC 0%, #EFF6FF 100%);
         padding: 14px 24px;
         border-radius: 8px;
-        border: 1px solid #30363D;
+        border: 1px solid #E2E8F0;
         margin-bottom: 20px;
     }
 
     .terminal-title {
-        color: #00F0FF;
+        color: #1E3A8A;
         font-size: 1.4rem;
         font-weight: 800;
         letter-spacing: 0.5px;
@@ -74,19 +75,19 @@ CUSTOM_CSS = """
 
     .terminal-status {
         font-size: 0.85rem;
-        color: #10B981;
-        background: rgba(16, 185, 129, 0.12);
+        color: #059669;
+        background: rgba(5, 150, 105, 0.1);
         padding: 4px 12px;
         border-radius: 12px;
-        border: 1px solid rgba(16, 185, 129, 0.3);
+        border: 1px solid rgba(5, 150, 105, 0.3);
         font-weight: 600;
         font-family: monospace;
     }
 
     /* Metric Cards and Accordion Styling */
     .stExpander {
-        background-color: #161B22 !important;
-        border: 1px solid #30363D !important;
+        background-color: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
         border-radius: 8px !important;
         margin-bottom: 12px !important;
     }
@@ -107,7 +108,7 @@ def main():
         f"""
         <div class="terminal-header">
             <div class="terminal-title">
-                📈 Bloomberg Terminal Pro | Market Analytics Dashboard
+                📈 Financial Market Dashboard | Terminal Pro
             </div>
             <div class="terminal-status">
                 ● LIVE CONNECTED | {now_utc}
