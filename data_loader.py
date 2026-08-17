@@ -426,10 +426,14 @@ def fetch_ff_futures_data():
     ff_df = pd.DataFrame(futures_list)
 
     try:
-        effr_series = web.DataReader("DFF", "fred", start=datetime.datetime.now() - timedelta(days=10))
-        effr_val = float(effr_series.iloc[-1].iloc[0]) if isinstance(effr_series.iloc[-1], pd.Series) else float(effr_series.iloc[-1])
+        effr_df = pd.read_csv("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF")
+        effr_val = float(effr_df["DFF"].dropna().iloc[-1])
     except Exception:
-        effr_val = 4.33
+        try:
+            effr_series = web.DataReader("DFF", "fred", start=datetime.datetime.now() - timedelta(days=10))
+            effr_val = float(effr_series.iloc[-1].iloc[0]) if isinstance(effr_series.iloc[-1], pd.Series) else float(effr_series.iloc[-1])
+        except Exception:
+            effr_val = 4.33
 
     return ff_df, effr_val
 
