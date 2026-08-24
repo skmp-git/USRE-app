@@ -1,0 +1,201 @@
+/* Bloomberg Terminal Pitch-Black Custom Stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;600;700&display=swap');
+
+:root {
+  --bg-color: #000000;
+  --bg-card: #050505;
+  --bg-header: #0a0a0a;
+  --amber-primary: #FFB000;
+  --amber-bright: #FFC000;
+  --green-up: #00FF66;
+  --red-down: #FF3333;
+  --cyan-accent: #00E5FF;
+  --white-text: #FFFFFF;
+  --gray-text: #8A8D9B;
+  --border-color: #332200;
+  --border-active: #FFB000;
+  --font-mono: 'Share Tech Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+/* Global Reset & Pitch Black Background */
+html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+  background-color: #000000 !important;
+  color: var(--amber-primary) !important;
+  font-family: var(--font-mono) !important;
+}
+
+/* Main Container Padding */
+.main .block-container {
+  padding-top: 0.5rem !important;
+  padding-bottom: 1rem !important;
+  max-width: 99% !important;
+}
+
+/* Bloomberg Top Status Header */
+.bb-status-bar {
+  background-color: #000000;
+  border-bottom: 2px solid var(--amber-primary);
+  padding: 4px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #FFFFFF;
+  margin-bottom: 6px;
+}
+
+.bb-status-logo {
+  color: #FFB000;
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.bb-live-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--green-up);
+  border-radius: 50%;
+  margin-right: 6px;
+  box-shadow: 0 0 8px var(--green-up);
+}
+
+/* Ticker Ribbon Container */
+.ticker-ribbon-wrapper {
+  background-color: #000000;
+  border: 1px solid #221500;
+  border-top: 1px solid var(--amber-primary);
+  border-bottom: 1px solid var(--amber-primary);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 6px 0;
+  margin-bottom: 10px;
+}
+
+.ticker-ribbon-content {
+  display: inline-block;
+  animation: ticker-scroll 35s linear infinite;
+}
+
+.ticker-ribbon-content:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.ticker-item {
+  display: inline-block;
+  padding: 0 15px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.ticker-symbol {
+  color: #FFB000;
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+.ticker-price {
+  color: #FFFFFF;
+  margin-right: 6px;
+}
+
+.ticker-up {
+  color: var(--green-up) !important;
+  font-weight: bold;
+}
+
+.ticker-down {
+  color: var(--red-down) !important;
+  font-weight: bold;
+}
+
+/* Terminal Multi-Pane Card Frames */
+.terminal-pane {
+  background-color: #000000;
+  border: 1px solid #443300;
+  border-radius: 2px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: inset 0 0 10px rgba(255, 176, 0, 0.05);
+}
+
+.terminal-pane-active {
+  border: 1.5px solid var(--amber-primary) !important;
+  box-shadow: 0 0 12px rgba(255, 176, 0, 0.25) !important;
+}
+
+.terminal-pane-header {
+  background-color: #0a0800;
+  border-bottom: 1px solid #443300;
+  padding: 4px 8px;
+  margin: -10px -10px 10px -10px;
+  color: var(--amber-primary);
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Streamlit Buttons as Keypad Keys */
+div.stButton > button {
+  background-color: #0a0800 !important;
+  color: #FFB000 !important;
+  border: 1px solid #443300 !important;
+  border-radius: 2px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  transition: all 0.15s ease-in-out !important;
+  padding: 4px 10px !important;
+}
+
+div.stButton > button:hover {
+  background-color: #FFB000 !important;
+  color: #000000 !important;
+  box-shadow: 0 0 10px rgba(255, 176, 0, 0.6) !important;
+}
+
+/* Inputs */
+div[data-baseweb="input"] {
+  background-color: #000000 !important;
+  border-color: #FFB000 !important;
+  color: #FFFFFF !important;
+  font-family: var(--font-mono) !important;
+}
+
+input {
+  color: #FFFFFF !important;
+  font-family: var(--font-mono) !important;
+}
+
+/* Dataframe Overrides */
+[data-testid="stDataFrame"] {
+  background-color: #000000 !important;
+  border: 1px solid #332200 !important;
+}
+
+/* Metric Cards */
+[data-testid="stMetricValue"] {
+  font-family: var(--font-mono) !important;
+  color: #FFC000 !important;
+  font-size: 20px !important;
+}
+
+[data-testid="stMetricLabel"] {
+  color: var(--gray-text) !important;
+  font-size: 11px !important;
+}
+
+/* Hide Streamlit Branding */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
