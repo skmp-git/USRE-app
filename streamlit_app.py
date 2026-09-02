@@ -54,6 +54,71 @@ data_load_state = st.text("Loading market yield data...")
 df_market = load_data(data_source, start_year, end_year)
 data_load_state.text("Data loaded successfully!")
 
+# Calculate overall composite signal across factors
+real_yield = SignalEngine.compute_real_bond_yield(df_market["yield_10y"], df_market["inflation_10y"])
+credit_residual = SignalEngine.compute_credit_spread_residual(
+    df_market["ig_spread"], df_market["profitability"], df_market["leverage"], df_market["equity_vol"]
+)
+rates_mom = SignalEngine.compute_rates_momentum(df_market["yield_10y"], df_market["bill_3m"])
+emc_composite = SignalEngine.compute_equity_momentum_in_credit(df_market["equity_price"])
+term_spread = SignalEngine.compute_rates_carry(df_market["yield_10y"], df_market["bill_3m"])
+
+transformer = SignalTransformer(
+    lower_quantile=lower_q,
+    upper_quantile=upper_q,
+    sensitivity=sensitivity
+)
+
+# Pipe exposures
+exp_real = transformer.transform_pipeline(real_yield.dropna())["step4_exposure"]
+exp_cred = transformer.transform_pipeline(credit_residual.dropna())["step4_exposure"]
+exp_mom = transformer.transform_pipeline(rates_mom.dropna())["step4_exposure"]
+exp_term = transformer.transform_pipeline(term_spread.dropna())["step4_exposure"]
+
+comp_df = pd.concat([exp_real, exp_cred, exp_mom, exp_term], axis=1).ffill().dropna()
+comp_df["composite_exposure"] = comp_df.mean(axis=1)
+
+latest_comp_exposure = float(comp_df["composite_exposure"].iloc[-1]) if not comp_df.empty else 1.0
+regime_info = SignalEngine.classify_overall_regime(latest_comp_exposure)
+
+# Banner for overall Aggressive vs Defensive Indicator
+st.markdown("---")
+st.subheader("🎯 Overall Systematic Signal Indicator & Market Stance")
+
+col_ind1, col_ind2, col_ind3 = st.columns([1, 2, 2])
+
+with col_ind1:
+    regime = regime_info["regime"]
+    if regime == "AGGRESSIVE":
+        st.error(f"🟢 **{regime}**")
+    elif regime == "DEFENSIVE":
+        st.warning(f"🔴 **{regime}**")
+    else:
+        st.info(f"🟡 **{regime}**")
+    st.metric("Composite Invested Exposure", f"{latest_comp_exposure:.1%}")
+
+with col_ind2:
+    st.markdown(f"**Macro Stance Assessment:**\n{regime_info['description']}")
+
+with col_ind3:
+    st.markdown(f"**Recommended Portfolio Action:**\n{regime_info['recommended_action']}")
+
+# Plot Composite Exposure Time Series
+fig_comp = go.Figure()
+fig_comp.add_trace(go.Scatter(x=comp_df.index, y=comp_df["composite_exposure"], name="Composite Exposure", line=dict(color="darkblue", width=2)))
+fig_comp.add_hline(y=1.10, line_dash="dash", line_color="green", annotation_text="Aggressive Threshold (110%)")
+fig_comp.add_hline(y=0.90, line_dash="dash", line_color="red", annotation_text="Defensive Threshold (90%)")
+fig_comp.add_hline(y=1.00, line_dash="dot", line_color="gray", annotation_text="Neutral Benchmark (100%)")
+fig_comp.update_layout(
+    title="Historical Overall Composite Portfolio Exposure Time Series",
+    title_font=dict(size=14),
+    xaxis_title="Date",
+    yaxis_title="Target Exposure",
+    yaxis=dict(range=[0.4, 1.6])
+)
+st.plotly_chart(fig_comp, use_container_width=True)
+st.markdown("---")
+
 tabs = st.tabs([
     "1. Data Ingestion",
     "2. Signal Generation",
@@ -94,15 +159,6 @@ with tabs[0]:
 with tabs[1]:
     st.header("2. Quantitative Signal Generation Engine")
 
-    # Compute signals
-    real_yield = SignalEngine.compute_real_bond_yield(df_market["yield_10y"], df_market["inflation_10y"])
-    credit_residual = SignalEngine.compute_credit_spread_residual(
-        df_market["ig_spread"], df_market["profitability"], df_market["leverage"], df_market["equity_vol"]
-    )
-    rates_mom = SignalEngine.compute_rates_momentum(df_market["yield_10y"], df_market["bill_3m"])
-    emc_composite = SignalEngine.compute_equity_momentum_in_credit(df_market["equity_price"])
-    term_spread = SignalEngine.compute_rates_carry(df_market["yield_10y"], df_market["bill_3m"])
-
     signals_df = pd.DataFrame({
         "Real Bond Yield (Value)": real_yield,
         "Credit Spread Residual (Value)": credit_residual,
@@ -136,11 +192,6 @@ with tabs[2]:
         """
     )
 
-    transformer = SignalTransformer(
-        lower_quantile=lower_q,
-        upper_quantile=upper_q,
-        sensitivity=sensitivity
-    )
     selected_raw = signals_df[sig_choice].dropna()
     pipe_df = transformer.transform_pipeline(selected_raw)
 

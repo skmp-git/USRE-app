@@ -66,6 +66,16 @@ def test_signal_engine(sample_data):
     )
     assert len(term_spread) == len(sample_data)
 
+    # Test overall regime classification
+    agg_info = SignalEngine.classify_overall_regime(1.25)
+    assert agg_info["regime"] == "AGGRESSIVE"
+
+    def_info = SignalEngine.classify_overall_regime(0.75)
+    assert def_info["regime"] == "DEFENSIVE"
+
+    neu_info = SignalEngine.classify_overall_regime(1.00)
+    assert neu_info["regime"] == "NEUTRAL"
+
 
 def test_signal_transformer(sample_data):
     transformer = SignalTransformer(min_periods=20, sensitivity=0.50)

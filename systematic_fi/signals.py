@@ -11,6 +11,9 @@ Implements Value, Momentum, and Carry signals for sovereign allocations and corp
 3. Carry Signals:
    - Rates Term Spread (long-term yield minus short-term bill rate).
    - Direct corporate credit spread.
+4. Composite Regime Classification:
+   - Combines normalized factor exposures across Value, Momentum, and Carry to output a overall portfolio signal:
+     "AGGRESSIVE" (> 110% exposure), "NEUTRAL" (90% - 110% exposure), or "DEFENSIVE" (< 90% exposure).
 """
 
 from typing import Dict, Optional, Tuple, Union
@@ -172,3 +175,41 @@ class SignalEngine:
         carry = credit_spread.copy()
         carry.name = "credit_carry_spread"
         return carry
+
+    @staticmethod
+    def classify_overall_regime(
+        composite_exposure: float,
+        aggressive_threshold: float = 1.10,
+        defensive_threshold: float = 0.90
+    ) -> Dict[str, Union[str, float]]:
+        """
+        Classifies overall market stance into AGGRESSIVE, NEUTRAL, or DEFENSIVE
+        based on composite exposure target.
+
+        - Exposure >= 1.10 (110%): AGGRESSIVE (High yield/spread value, positive momentum, strong carry)
+        - Exposure <= 0.90 (90%): DEFENSIVE (Low yield/spread value, negative momentum, flattened curve)
+        - 0.90 < Exposure < 1.10: NEUTRAL (Balanced exposure)
+        """
+        if np.isnan(composite_exposure):
+            regime = "NEUTRAL"
+            description = "Insufficient historical data for regime classification."
+            action = "Maintain baseline benchmark weights."
+        elif composite_exposure >= aggressive_threshold:
+            regime = "AGGRESSIVE"
+            description = "High expected return environment (attractive value, positive momentum, steep carry curve)."
+            action = "Overweight long-duration assets and credit risk spread assets (Target Exposure: ~110%-150%)."
+        elif composite_exposure <= defensive_threshold:
+            regime = "DEFENSIVE"
+            description = "High macro risk or expensive valuations (flat/inverted yield curve, negative momentum)."
+            action = "Underweight risk assets, reduce duration, accumulate short-term bills/cash (Target Exposure: ~50%-90%)."
+        else:
+            regime = "NEUTRAL"
+            description = "Balanced macro conditions and neutral signal indicators."
+            action = "Maintain neutral target asset weights (Target Exposure: ~90%-110%)."
+
+        return {
+            "regime": regime,
+            "composite_exposure": composite_exposure,
+            "description": description,
+            "recommended_action": action
+        }
