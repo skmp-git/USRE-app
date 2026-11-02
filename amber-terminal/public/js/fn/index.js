@@ -14,6 +14,7 @@ import coverage from "./coverage.js";
 import workspace from "./workspace.js";
 import equity from "./equity.js";
 import playbooks from "./playbooks.js";
+import yas from "./yas.js";
 
 export const FUNCS = {};
-for (const f of [...market, ...security, ...calendar, ...newsfilings, ...docsearch, ...rates, ...options, ...btst, ...coverage, ...workspace, ...equity, ...playbooks, ...apiHelp, ...meta]) FUNCS[f.id] = f;
+for (const f of [...market, ...security, ...calendar, ...newsfilings, ...docsearch, ...rates, ...options, ...btst, ...coverage, ...workspace, ...equity, ...playbooks, ...yas, ...apiHelp, ...meta]) FUNCS[f.id] = f;
