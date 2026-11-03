@@ -228,12 +228,56 @@ test("EQS: the server function screens Nasdaq's list end to end", async () => {
     [/api\.nasdaq\.com\/api\/screener\/stocks/, { data: { rows: raw } }],
     [/api\.nasdaq\.com\/api\/quote\/watchlist/, { data: [] }],
   ];
-  const d = await eqs.default({ preset: "MEGA", sort: "marketCap" });
+  const d = await eqs.default({ market: "US", preset: "MEGA", sort: "marketCap" });
   assert.equal(d.universe, rows.length);
   assert.ok(d.rows.every((r) => r.marketCap >= 200e9));
   assert.equal(d.rows[0].ticker, "NVDA");
   assert.equal(d.sectors[0].name, eqs.facets(rows).sectors[0].name);
-  assert.match(d.source, /Nasdaq/);
+  assert.match(d.source, /US equity universe/);
+});
+
+test("EQS: HK universe and HK preset return Hong Kong equities", async () => {
+  assert.ok(eqs.HK_CONSTITUENTS.length >= 30, "HK constituents defined");
+  assert.ok(eqs.HK_CONSTITUENTS.some((c) => c.ticker === "0700" && c.name.includes("Tencent")));
+  assert.ok(eqs.HK_CONSTITUENTS.some((c) => c.ticker === "9988" && c.name.includes("Alibaba")));
+  assert.ok(eqs.HK_CONSTITUENTS.some((c) => c.ticker === "0005" && c.name.includes("HSBC")));
+
+  const hkRows = eqs.HK_CONSTITUENTS.map((c, i) => ({
+    ticker: c.ticker,
+    symbol: `YAHOO:${c.symbol}`,
+    name: c.name,
+    price: 100 + i,
+    changePct: 1.5,
+    volume: 5e6,
+    marketCap: (100 + i) * 1e8,
+    sector: c.sector,
+    industry: c.industry,
+    country: "Hong Kong",
+    market: "HK",
+    currency: "HKD",
+  }));
+
+  const res = eqs.screen(hkRows, eqs.filtersFrom({ market: "HK" }));
+  assert.equal(res.total, hkRows.length);
+  assert.ok(res.rows.every((r) => r.market === "HK" && r.currency === "HKD"));
+
+  // Check preset HK sets market to HK
+  const f = eqs.filtersFrom({ preset: "HK" });
+  assert.equal(f.market, "HK");
+
+  // Check mixed universe filtering
+  const usRows = rows.map((r) => ({ ...r, market: "US", currency: "USD" }));
+  const combined = [...usRows, ...hkRows];
+  const allFiltered = eqs.screen(combined, eqs.filtersFrom({ market: "ALL" }));
+  assert.equal(allFiltered.total, combined.length);
+
+  const hkFiltered = eqs.screen(combined, eqs.filtersFrom({ market: "HK" }));
+  assert.equal(hkFiltered.total, hkRows.length);
+  assert.ok(hkFiltered.rows.some((r) => r.ticker === "0700"));
+
+  const usFiltered = eqs.screen(combined, eqs.filtersFrom({ market: "US" }));
+  assert.equal(usFiltered.total, usRows.length);
+  assert.ok(!usFiltered.rows.some((r) => r.ticker === "0700"));
 });
 
 // ---------- PORT ----------

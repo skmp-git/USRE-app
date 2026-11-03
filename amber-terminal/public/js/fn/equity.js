@@ -166,11 +166,12 @@ const EQS_FIELDS = [
   ["chgMax", "to", "5"],
   ["volMin", "Volume at least", "1M"],
 ];
-const TEXT_SORTS = ["ticker", "name", "sector", "country"];
+const TEXT_SORTS = ["ticker", "name", "sector", "country", "market"];
 const EQS_COLS = [
   { key: "ticker", label: "Ticker", left: true, lbl: true },
+  { key: "market", label: "Mkt", left: true },
   { key: "name", label: "Name", left: true, fmt: (v) => (v.length > 30 ? `${v.slice(0, 29)}…` : v) },
-  { key: "price", label: "Price", fmt: px },
+  { key: "price", label: "Price", fmt: (v, r) => `${px(v)}${r.currency && r.currency !== "USD" ? ` ${r.currency}` : ""}` },
   { key: "changePct", label: "Day %", fmt: (v) => pct(v), cls },
   { key: "volume", label: "Volume", fmt: big },
   { key: "marketCap", label: "Mkt cap", fmt: big },
@@ -188,7 +189,7 @@ async function renderEqs(ctx) {
   ctx.el.append(form, info, body);
   const opt = (list, cur, all) =>
     `<option value="">${all}</option>` +
-    list
+    (list || [])
       .map(
         (x) =>
           `<option value="${esc(x.name)}"${x.name === cur ? " selected" : ""}>${esc(x.name)} (${x.n})</option>`,
@@ -206,20 +207,35 @@ async function renderEqs(ctx) {
     const d = await api.fn("eqs", query);
     if (!ctx.live()) return;
     filters = d.filters;
+    const curMarket = filters.market || "";
     form.innerHTML =
+      `<select name="market">` +
+        `<option value=""${!curMarket || curMarket === "ALL" ? " selected" : ""}>All Markets (US & HK)</option>` +
+        `<option value="US"${curMarket === "US" ? " selected" : ""}>US (NYSE, Nasdaq, AMEX)</option>` +
+        `<option value="HK"${curMarket === "HK" ? " selected" : ""}>Hong Kong (HKEX)</option>` +
+      `</select>` +
       `<select name="sector">${opt(d.sectors, filters.sector, "Any sector")}</select>` +
       `<select name="country">${opt(d.countries, filters.country, "Any country")}</select>` +
       EQS_FIELDS.map(
         ([k, label, ph]) =>
           `<span class="dim">${label}</span><input name="${k}" style="width:70px" placeholder="${ph}" value="${esc(fmtAmt(filters[k]))}">`,
       ).join("") +
-      `<button type="submit">Screen</button><button type="button" data-reset>Clear</button>`;
+      `<button type="submit">Screen</button>` +
+      `<button type="button" data-preset="HK" style="background:#1a233a;color:#5aaeff">HK Preset</button>` +
+      `<button type="button" data-reset>Clear</button>`;
     const sortName =
       EQS_COLS.find((c) => c.key === filters.sort)?.label || filters.sort;
-    info.textContent = `${d.total.toLocaleString("en-US")} of ${d.universe.toLocaleString("en-US")} US stocks match.${d.total > d.rows.length ? ` Showing the first ${d.rows.length}.` : ""} Sorted by ${sortName}, ${filters.dir === "asc" ? "lowest" : "highest"} first. Click a heading to sort, a row to open DES.`;
+    const mktLabel = curMarket === "HK" ? "Hong Kong" : curMarket === "US" ? "US (NYSE/Nasdaq/AMEX)" : "Global (US & HK)";
+    info.textContent = `${d.total.toLocaleString("en-US")} of ${d.universe.toLocaleString("en-US")} ${mktLabel} stocks match.${d.total > d.rows.length ? ` Showing the first ${d.rows.length}.` : ""} Sorted by ${sortName}, ${filters.dir === "asc" ? "lowest" : "highest"} first. Click a heading to sort, a row to open DES.`;
     body.innerHTML = "";
     const t = table(d.rows, EQS_COLS, {
-      onRow: (r) => ctx.go(`${r.ticker} US EQUITY DES`),
+      onRow: (r) => {
+        if (r.market === "HK") {
+          ctx.go(`${r.ticker} HK EQUITY DES`);
+        } else {
+          ctx.go(`${r.ticker} US EQUITY DES`);
+        }
+      },
     });
     t.querySelectorAll("th").forEach((th, i) => {
       const k = EQS_COLS[i].key;
@@ -248,6 +264,11 @@ async function renderEqs(ctx) {
     load();
   };
   form.onclick = (e) => {
+    if (e.target.matches("[data-preset=HK]")) {
+      query = { preset: "HK" };
+      load();
+      return;
+    }
     if (!e.target.matches("[data-reset]")) return;
     query = {};
     load();
@@ -853,7 +874,7 @@ export default [
     name: "Equity screener",
     group: "Equities",
     source:
-      "Nasdaq stock screener (every US-listed stock; the 200 largest live, the rest last close)",
+      "Global equity screener (entire US universe across NYSE/Nasdaq/AMEX and Hong Kong HKEX leaders)",
     render: renderEqs,
   },
   {
