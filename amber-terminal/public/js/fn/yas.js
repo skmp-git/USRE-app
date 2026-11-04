@@ -49,6 +49,67 @@ function yasView(ctx, d, state) {
     }),
   );
 
+  // CUSIP Search & Quick Lookup Bar
+  const searchBarHtml = html(
+    `<div style="display:flex;align-items:center;gap:8px;margin:6px 0 8px;padding:6px 10px;background:#13171f;border:1px solid #2d3748;flex-wrap:wrap;font-size:12px">
+      <span class="amber" style="font-weight:bold">CUSIP LOOKUP:</span>
+      <input type="text" id="yas-cusip-search" placeholder="Enter 9-digit CUSIP (e.g. 037833EK3, 594918BW7)" value="${state.cusip || ""}" style="padding:3px 8px;width:240px;background:#0d1117;color:var(--text);border:1px solid #4a5568;font-family:monospace;text-transform:uppercase">
+      <button id="yas-cusip-btn" class="btn" style="padding:3px 12px;cursor:pointer;background:var(--amber);color:#000;font-weight:bold;border:none">LOOKUP CUSIP</button>
+      <span class="dim" style="margin-left:6px">Quick CUSIPs:</span>
+      <div style="display:inline-flex;gap:6px;flex-wrap:wrap">
+        <a href="#" class="yas-quick-cusip mono" data-cusip="037833EK3" style="color:var(--amber);text-decoration:none;border-bottom:1px dotted">037833EK3 (AAPL)</a>
+        <a href="#" class="yas-quick-cusip mono" data-cusip="594918BW7" style="color:var(--amber);text-decoration:none;border-bottom:1px dotted">594918BW7 (MSFT)</a>
+        <a href="#" class="yas-quick-cusip mono" data-cusip="46647PCR2" style="color:var(--amber);text-decoration:none;border-bottom:1px dotted">46647PCR2 (JPM)</a>
+        <a href="#" class="yas-quick-cusip mono" data-cusip="88160RAW2" style="color:var(--amber);text-decoration:none;border-bottom:1px dotted">88160RAW2 (TSLA)</a>
+        <a href="#" class="yas-quick-cusip mono" data-cusip="91282CGL4" style="color:var(--amber);text-decoration:none;border-bottom:1px dotted">91282CGL4 (UST 10Y)</a>
+      </div>
+    </div>`
+  );
+
+  const doCusipSearch = (targetCusip) => {
+    const val = (targetCusip || searchBarHtml.querySelector("#yas-cusip-search").value || "").trim().toUpperCase();
+    if (!val) return;
+    const foundPreset = d.presets.find((p) => p.cusip && p.cusip.toUpperCase() === val);
+    if (foundPreset) {
+      state.presetId = foundPreset.id;
+      state.cusip = foundPreset.cusip;
+      state.years = foundPreset.years;
+      state.coupon = foundPreset.coupon;
+      state.type = foundPreset.type || "corp";
+      state.rating = foundPreset.rating;
+      state.spreadBp = foundPreset.spreadBp;
+      state.issuer = foundPreset.issuer;
+      state.sector = foundPreset.sector;
+      state.price = null;
+      state.yield = null;
+      state.freq = foundPreset.freq || 2;
+    } else {
+      state.presetId = null;
+      state.cusip = val;
+      state.price = null;
+      state.yield = null;
+    }
+    loadAndDraw();
+  };
+
+  searchBarHtml.querySelector("#yas-cusip-btn").onclick = (e) => {
+    e.preventDefault();
+    doCusipSearch();
+  };
+  searchBarHtml.querySelector("#yas-cusip-search").onkeydown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      doCusipSearch();
+    }
+  };
+  searchBarHtml.querySelectorAll(".yas-quick-cusip").forEach((el) => {
+    el.onclick = (e) => {
+      e.preventDefault();
+      doCusipSearch(el.dataset.cusip);
+    };
+  });
+  ctx.el.append(searchBarHtml);
+
   // Corporate Security Header Banner
   const inst = d.instrument;
   const c = d.credit;
@@ -62,12 +123,18 @@ function yasView(ctx, d, state) {
     ? "warn"
     : "neg";
 
+  const cusipFoundBadge = d.cusipQuery?.requested
+    ? (d.cusipQuery.found
+        ? `<span class="pos" style="font-size:11px;margin-left:6px">[CUSIP VERIFIED]</span>`
+        : `<span class="dim" style="font-size:11px;margin-left:6px">[CUSTOM CUSIP]</span>`)
+    : "";
+
   ctx.el.append(
     html(
       `<div style="display:flex;justify-content:space-between;align-items:center;background:#1b212c;padding:6px 10px;margin:6px 0;border-left:3px solid var(--amber);font-size:12px;flex-wrap:wrap;gap:8px">
         <div>
           <b class="amber" style="font-size:14px">${esc(inst.name)}</b>
-          <span class="dim" style="margin-left:10px">CUSIP:</span> <span class="mono">${esc(inst.cusip || "N/A")}</span>
+          <span class="dim" style="margin-left:10px">CUSIP:</span> <span class="mono" style="font-weight:bold">${esc(inst.cusip || "N/A")}</span>${cusipFoundBadge}
           <span class="dim" style="margin-left:10px">Sector:</span> <span>${esc(inst.sector || "General")}</span>
         </div>
         <div>
@@ -282,17 +349,32 @@ export default [
       let price = null;
       let ytm = null;
       let presetId = "AAPL_2030";
+      let cusip = null;
       let type = "corp";
 
-      if (args[0] && fin(+args[0])) {
-        years = +args[0];
-        presetId = null;
+      // If first argument is 9 alphanumeric characters or matches a CUSIP/preset
+      if (args[0]) {
+        const argUpper = String(args[0]).trim().toUpperCase();
+        if (argUpper.startsWith("CUSIP=")) {
+          cusip = argUpper.replace("CUSIP=", "").trim();
+          presetId = null;
+        } else if (/^[0-9A-Z]{8,9}$/.test(argUpper) && !fin(+argUpper)) {
+          // Looks like a CUSIP (8-9 chars alphanumeric e.g. 037833EK3, 594918BW7)
+          cusip = argUpper;
+          presetId = null;
+        } else if (fin(+args[0])) {
+          years = +args[0];
+          presetId = null;
+        } else {
+          presetId = argUpper;
+        }
       }
       if (args[1] && fin(+args[1])) coupon = +args[1];
       if (args[2] && fin(+args[2])) price = +args[2];
 
-      const state = { presetId, type, years, coupon, price, yield: ytm, freq: 2 };
-      const d = await api.fn("yas", { preset: presetId, coupon, years, price, yield: ytm, freq: 2 });
+      const state = { presetId, cusip, type, years, coupon, price, yield: ytm, freq: 2 };
+      const d = await api.fn("yas", { preset: presetId, cusip, coupon, years, price, yield: ytm, freq: 2 });
+      if (d.instrument?.cusip) state.cusip = d.instrument.cusip;
       if (ctx.live()) yasView(ctx, d, state);
     },
   },

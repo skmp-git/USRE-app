@@ -268,30 +268,66 @@ export function rateScenarios(basePrice, baseYtm, coupon, years, freq = 2, face 
   });
 }
 
-// Preset securities: Sovereign & OSBAP Corporate Benchmark Presets
+// Preset securities & CUSIP Bond Database: Sovereign & OSBAP Corporate Benchmark Presets
 export const PRESETS = [
   // US Treasuries
-  { id: "US2Y", name: "US Treasury 2Y Note", type: "govt", issuer: "US Treasury", years: 2, coupon: 4.25, freq: 2, benchmark: "2Y" },
-  { id: "US5Y", name: "US Treasury 5Y Note", type: "govt", issuer: "US Treasury", years: 5, coupon: 4.125, freq: 2, benchmark: "5Y" },
-  { id: "US10Y", name: "US Treasury 10Y Note", type: "govt", issuer: "US Treasury", years: 10, coupon: 4.5, freq: 2, benchmark: "10Y" },
-  { id: "US30Y", name: "US Treasury 30Y Bond", type: "govt", issuer: "US Treasury", years: 30, coupon: 4.625, freq: 2, benchmark: "30Y" },
+  { id: "US2Y", name: "US Treasury 2Y Note", type: "govt", issuer: "US Treasury", cusip: "912828YK0", years: 2, coupon: 4.25, freq: 2, benchmark: "2Y" },
+  { id: "US5Y", name: "US Treasury 5Y Note", type: "govt", issuer: "US Treasury", cusip: "912828YL8", years: 5, coupon: 4.125, freq: 2, benchmark: "5Y" },
+  { id: "US10Y", name: "US Treasury 10Y Note", type: "govt", issuer: "US Treasury", cusip: "91282CGL4", years: 10, coupon: 4.5, freq: 2, benchmark: "10Y" },
+  { id: "US30Y", name: "US Treasury 30Y Bond", type: "govt", issuer: "US Treasury", cusip: "912810TL9", years: 30, coupon: 4.625, freq: 2, benchmark: "30Y" },
 
   // Corporate Bonds (OSBAP representative benchmark universe)
   { id: "AAPL_2030", name: "Apple Inc 4.30% 2030", type: "corp", issuer: "Apple Inc.", cusip: "037833EK3", sector: "Technology", rating: "AAA", ratingCode: 1, years: 5.5, coupon: 4.30, spreadBp: 65, freq: 2 },
+  { id: "AAPL_2026", name: "Apple Inc 3.25% 2026", type: "corp", issuer: "Apple Inc.", cusip: "037833DJ6", sector: "Technology", rating: "AAA", ratingCode: 1, years: 1.5, coupon: 3.25, spreadBp: 40, freq: 2 },
   { id: "MSFT_2033", name: "Microsoft Corp 4.50% 2033", type: "corp", issuer: "Microsoft Corp.", cusip: "594918BW7", sector: "Technology", rating: "AAA", ratingCode: 1, years: 8.5, coupon: 4.50, spreadBp: 55, freq: 2 },
+  { id: "MSFT_2027", name: "Microsoft Corp 3.30% 2027", type: "corp", issuer: "Microsoft Corp.", cusip: "594918BV9", sector: "Technology", rating: "AAA", ratingCode: 1, years: 2.8, coupon: 3.30, spreadBp: 45, freq: 2 },
+  { id: "GOOGL_2030",name: "Alphabet Inc 2.05% 2030",  type: "corp", issuer: "Alphabet Inc.", cusip: "02079KAC1", sector: "Technology", rating: "AA+", ratingCode: 2, years: 5.0, coupon: 2.05, spreadBp: 50, freq: 2 },
+  { id: "NVDA_2030", name: "NVIDIA Corp 2.85% 2030",   type: "corp", issuer: "NVIDIA Corp.", cusip: "67066GAF2", sector: "Technology", rating: "AA", ratingCode: 3, years: 5.5, coupon: 2.85, spreadBp: 60, freq: 2 },
   { id: "JPM_2029",  name: "JPMorgan Chase 5.15% 2029", type: "corp", issuer: "JPMorgan Chase & Co.", cusip: "46647PCR2", sector: "Finance", rating: "A-", ratingCode: 7, years: 4.5, coupon: 5.15, spreadBp: 115, freq: 2 },
+  { id: "GS_2031",   name: "Goldman Sachs 3.80% 2031",  type: "corp", issuer: "Goldman Sachs Group", cusip: "38141GYS8", sector: "Finance", rating: "BBB+", ratingCode: 8, years: 6.8, coupon: 3.80, spreadBp: 135, freq: 2 },
+  { id: "BAC_2028",  name: "Bank of America 4.376% 2028", type: "corp", issuer: "Bank of America", cusip: "06051GHC2", sector: "Finance", rating: "A-", ratingCode: 7, years: 3.8, coupon: 4.376, spreadBp: 110, freq: 2 },
   { id: "AMZN_2034", name: "Amazon.com 4.70% 2034", type: "corp", issuer: "Amazon.com Inc.", cusip: "023135CL8", sector: "Consumer", rating: "AA", ratingCode: 3, years: 9.5, coupon: 4.70, spreadBp: 80, freq: 2 },
   { id: "BA_2031",   name: "Boeing Co 5.805% 2031", type: "corp", issuer: "Boeing Co.", cusip: "097023CN0", sector: "Industrials", rating: "BBB-", ratingCode: 10, years: 6.5, coupon: 5.805, spreadBp: 215, freq: 2 },
   { id: "F_2028",    name: "Ford Motor Credit 6.80% 2028", type: "corp", issuer: "Ford Motor Credit", cusip: "345397A58", sector: "Consumer", rating: "BB+", ratingCode: 11, years: 3.5, coupon: 6.80, spreadBp: 275, freq: 2 },
+  { id: "GM_2029",   name: "General Motors 5.40% 2029", type: "corp", issuer: "General Motors Co.", cusip: "37045VAU6", sector: "Consumer", rating: "BBB", ratingCode: 9, years: 4.8, coupon: 5.40, spreadBp: 170, freq: 2 },
   { id: "TSLA_2027", name: "Tesla Inc 5.30% 2027", type: "corp", issuer: "Tesla Inc.", cusip: "88160RAW2", sector: "Consumer", rating: "BBB", ratingCode: 9, years: 2.5, coupon: 5.30, spreadBp: 155, freq: 2 },
   { id: "NFLX_2030", name: "Netflix Inc 5.875% 2030", type: "corp", issuer: "Netflix Inc.", cusip: "64110LAZ4", sector: "Communications", rating: "BBB+", ratingCode: 8, years: 5.0, coupon: 5.875, spreadBp: 135, freq: 2 },
+  { id: "WMT_2032",  name: "Walmart Inc 4.15% 2032",    type: "corp", issuer: "Walmart Inc.", cusip: "931142EZ9", sector: "Consumer", rating: "AA", ratingCode: 3, years: 7.5, coupon: 4.15, spreadBp: 70, freq: 2 },
+  { id: "XOM_2030",  name: "Exxon Mobil 2.61% 2030",    type: "corp", issuer: "Exxon Mobil Corp.", cusip: "30231GBF5", sector: "Energy", rating: "AA+", ratingCode: 2, years: 5.2, coupon: 2.61, spreadBp: 65, freq: 2 },
+  { id: "JNJ_2033",  name: "Johnson & Johnson 4.50% 2033", type: "corp", issuer: "Johnson & Johnson", cusip: "478160CR8", sector: "Healthcare", rating: "AAA", ratingCode: 1, years: 8.8, coupon: 4.50, spreadBp: 50, freq: 2 },
 ];
 
+/**
+ * Searches and finds bond by CUSIP or ID.
+ */
+export function findBondByCusip(cusipOrId) {
+  if (!cusipOrId) return null;
+  const target = String(cusipOrId).trim().toUpperCase();
+  // Direct CUSIP match
+  const byCusip = PRESETS.find((p) => p.cusip && p.cusip.toUpperCase() === target);
+  if (byCusip) return byCusip;
+  // Match by ID
+  const byId = PRESETS.find((p) => p.id.toUpperCase() === target);
+  if (byId) return byId;
+  return null;
+}
+
 export default async function (q = {}) {
-  // Check preset match first
+  // Check CUSIP query or preset match
   let presetObj = null;
-  if (q.preset) {
-    presetObj = PRESETS.find((p) => p.id.toUpperCase() === String(q.preset).toUpperCase());
+  let cusipFound = false;
+  const requestedCusip = q.cusip ? String(q.cusip).trim().toUpperCase() : null;
+
+  if (requestedCusip) {
+    presetObj = findBondByCusip(requestedCusip);
+    if (presetObj) cusipFound = true;
+  }
+
+  if (!presetObj && q.preset) {
+    presetObj = findBondByCusip(q.preset);
+    if (presetObj && presetObj.cusip && presetObj.cusip.toUpperCase() === String(q.preset).trim().toUpperCase()) {
+      cusipFound = true;
+    }
   }
 
   let coupon = q.coupon != null ? parseFloat(q.coupon) : (presetObj?.coupon ?? 4.5);
@@ -367,8 +403,8 @@ export default async function (q = {}) {
   const cs01Per100k = round(cs01 * 1000, 2);
 
   // Corporate issuer attributes
-  const issuer = q.issuer || presetObj?.issuer || (bondType === "corp" ? "Corporate Issuer" : "US Treasury");
-  const cusip = q.cusip || presetObj?.cusip || "N/A";
+  const issuer = q.issuer || presetObj?.issuer || (requestedCusip ? `Bond ${requestedCusip}` : (bondType === "corp" ? "Corporate Issuer" : "US Treasury"));
+  const cusip = presetObj?.cusip || requestedCusip || "N/A";
   const sector = q.sector || presetObj?.sector || (bondType === "corp" ? "Industrial" : "Sovereign");
 
   // Benchmark tenor classification
@@ -426,6 +462,10 @@ export default async function (q = {}) {
       spreadBp: round((ytm - benchYield) * 100, 1),
     },
     presets: PRESETS,
+    cusipQuery: {
+      requested: requestedCusip,
+      found: cusipFound,
+    },
     scenarios,
     cashFlows: flows.slice(0, 12),
     totalPeriods: flows.length,

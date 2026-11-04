@@ -11,6 +11,7 @@ import yas, {
   cashFlows,
   rateScenarios,
   parseRating,
+  findBondByCusip,
   PRESETS,
 } from "../lib/fn/yas.js";
 
@@ -169,14 +170,61 @@ test("YAS: corporate bond pricing with credit spread and CS01", async () => {
   assert.match(res.credit.methodology, /Open Source Bond Asset Pricing/);
 });
 
-test("YAS: preset securities list includes both Treasuries and Corporate bonds", () => {
-  assert.ok(PRESETS.length >= 8);
+test("YAS: preset securities list includes both Treasuries and Corporate bonds with CUSIPs", () => {
+  assert.ok(PRESETS.length >= 12);
   const treasuries = PRESETS.filter((p) => p.type === "govt");
   const corporates = PRESETS.filter((p) => p.type === "corp");
 
   assert.ok(treasuries.length >= 4);
-  assert.ok(corporates.length >= 5);
-  assert.ok(corporates.some((c) => c.issuer === "Apple Inc."));
-  assert.ok(corporates.some((c) => c.issuer === "Microsoft Corp."));
-  assert.ok(corporates.some((c) => c.issuer === "JPMorgan Chase & Co."));
+  assert.ok(corporates.length >= 8);
+  assert.ok(corporates.some((c) => c.issuer === "Apple Inc." && c.cusip === "037833EK3"));
+  assert.ok(corporates.some((c) => c.issuer === "Microsoft Corp." && c.cusip === "594918BW7"));
+  assert.ok(corporates.some((c) => c.issuer === "JPMorgan Chase & Co." && c.cusip === "46647PCR2"));
+});
+
+test("YAS: findBondByCusip matches exact CUSIP case-insensitively", () => {
+  const bondApple = findBondByCusip("037833ek3");
+  assert.ok(bondApple);
+  assert.equal(bondApple.issuer, "Apple Inc.");
+  assert.equal(bondApple.cusip, "037833EK3");
+
+  const bondMsft = findBondByCusip("594918BW7");
+  assert.ok(bondMsft);
+  assert.equal(bondMsft.issuer, "Microsoft Corp.");
+
+  const bondUst = findBondByCusip("91282CGL4");
+  assert.ok(bondUst);
+  assert.equal(bondUst.type, "govt");
+
+  const notFound = findBondByCusip("NONEXISTENT");
+  assert.equal(notFound, null);
+});
+
+test("YAS: prices bond correctly when searched by CUSIP via query parameter", async () => {
+  const res = await yas({ cusip: "594918BW7" });
+  assert.equal(res.instrument.issuer, "Microsoft Corp.");
+  assert.equal(res.instrument.cusip, "594918BW7");
+  assert.equal(res.instrument.coupon, 4.5);
+  assert.equal(res.cusipQuery.requested, "594918BW7");
+  assert.equal(res.cusipQuery.found, true);
+  assert.ok(res.pricing.cleanPrice > 0);
+  assert.ok(res.pricing.dirtyPrice > res.pricing.cleanPrice);
+  assert.ok(res.credit.cs01 > 0);
+});
+
+test("YAS: handles custom/unknown CUSIP gracefully with custom pricing parameters", async () => {
+  const res = await yas({
+    cusip: "999999ZZ9",
+    coupon: "6.0",
+    years: "7.0",
+    spreadBp: "180",
+    issuer: "Acme Corp",
+  });
+  assert.equal(res.instrument.cusip, "999999ZZ9");
+  assert.equal(res.instrument.issuer, "Acme Corp");
+  assert.equal(res.instrument.coupon, 6.0);
+  assert.equal(res.instrument.years, 7.0);
+  assert.equal(res.credit.spreadBp, 180);
+  assert.equal(res.cusipQuery.found, false);
+  assert.ok(res.pricing.cleanPrice > 0);
 });
