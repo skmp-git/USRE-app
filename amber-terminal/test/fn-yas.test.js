@@ -1,12 +1,17 @@
 // Tests for Fixed Income YAS (Yield and Spread) bond pricing and risk calculations
+// including Open Source Bond Asset Pricing (OSBAP) corporate bond methodologies
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import yas, {
   bondPrice,
   bondYtm,
   durationAndConvexity,
+  accruedInterest,
+  interpolateTreasuryCurve,
   cashFlows,
   rateScenarios,
+  parseRating,
+  PRESETS,
 } from "../lib/fn/yas.js";
 
 const close = (a, b, eps = 1e-3) =>
@@ -61,6 +66,57 @@ test("YAS: duration, DV01 and convexity for a 5-year par bond", () => {
   close(metrics.convexity, 22.8, 1.0);
 });
 
+test("YAS: accrued interest (acclast) using 30/360 day count convention", () => {
+  // 6% coupon, semi-annual (freq = 2), 60 days accrued out of 180 days in period
+  const acc = accruedInterest(6.0, 2, 100, 60, "30/360");
+  assert.equal(acc.daysAccrued, 60);
+  assert.equal(acc.daysInPeriod, 180);
+  close(acc.accruedFraction, 1 / 3, 1e-4);
+  // Period coupon = 3.0, 1/3 accrued = 1.0
+  close(acc.acclast, 1.0, 1e-4);
+});
+
+test("YAS: OSBAP ComputeCredit Treasury curve interpolation", () => {
+  const curve = {
+    "1Y": 4.5,
+    "2Y": 4.0,
+    "3Y": 4.1,
+    "5Y": 4.2,
+    "7Y": 4.3,
+    "10Y": 4.4,
+    "20Y": 4.6,
+    "30Y": 4.5,
+  };
+
+  // Exact node match
+  assert.equal(interpolateTreasuryCurve(2, curve), 4.0);
+  assert.equal(interpolateTreasuryCurve(10, curve), 4.4);
+
+  // Midpoint between 2Y (4.0) and 3Y (4.1) at 2.5Y => 4.05
+  close(interpolateTreasuryCurve(2.5, curve), 4.05, 1e-3);
+
+  // Midpoint between 5Y (4.2) and 7Y (4.3) at 6.0Y => 4.25
+  close(interpolateTreasuryCurve(6.0, curve), 4.25, 1e-3);
+});
+
+test("YAS: rating parser supports S&P, Moody's, and numeric 1-22 codes", () => {
+  const r1 = parseRating("AAA");
+  assert.equal(r1.code, 1);
+  assert.equal(r1.grade, "Investment Grade");
+
+  const rBaa = parseRating("Baa2");
+  assert.equal(rBaa.code, 9);
+  assert.equal(rBaa.sp, "BBB");
+
+  const rHyp = parseRating(11);
+  assert.equal(rHyp.sp, "BB+");
+  assert.equal(rHyp.grade, "High Yield");
+
+  const rD = parseRating("D");
+  assert.equal(rD.code, 22);
+  assert.equal(rD.grade, "Default");
+});
+
 test("YAS: rate shock scenarios accurately reflect bond price moves", () => {
   const scenarios = rateScenarios(100, 5.0, 5.0, 10, 2, 100);
   assert.equal(scenarios.length, 6);
@@ -94,17 +150,33 @@ test("YAS: cash flow schedule totals coupon and principal", () => {
   assert.equal(flows[5].total, 102.0);
 });
 
-test("YAS: endpoint returns complete payload with benchmark spread", async () => {
-  const res = await yas({ coupon: "5.0", years: "10", price: "98.5" });
+test("YAS: corporate bond pricing with credit spread and CS01", async () => {
+  const res = await yas({
+    preset: "AAPL_2030",
+    coupon: "4.30",
+    years: "5.5",
+    spreadBp: "65",
+  });
 
-  assert.equal(res.instrument.coupon, 5.0);
-  assert.equal(res.instrument.years, 10);
-  assert.equal(res.pricing.cleanPrice, 98.5);
-  assert.ok(res.pricing.ytm > 5.0); // discount bond has YTM > coupon
-  assert.ok(res.risk.modDuration > 0);
-  assert.ok(res.risk.dv01 > 0);
-  assert.equal(res.benchmark.tenor, "10Y");
-  assert.ok(Array.isArray(res.scenarios));
-  assert.ok(Array.isArray(res.cashFlows));
-  assert.match(res.source, /Amber Terminal/);
+  assert.equal(res.instrument.type, "corp");
+  assert.equal(res.instrument.issuer, "Apple Inc.");
+  assert.equal(res.instrument.cusip, "037833EK3");
+  assert.equal(res.instrument.ratingGrade, "Investment Grade");
+  assert.equal(res.credit.spreadBp, 65);
+  assert.ok(res.credit.cs01 > 0);
+  assert.ok(res.credit.cs01Per100k > 0);
+  assert.ok(res.pricing.dirtyPrice > res.pricing.cleanPrice); // dirty price includes accrued interest
+  assert.match(res.credit.methodology, /Open Source Bond Asset Pricing/);
+});
+
+test("YAS: preset securities list includes both Treasuries and Corporate bonds", () => {
+  assert.ok(PRESETS.length >= 8);
+  const treasuries = PRESETS.filter((p) => p.type === "govt");
+  const corporates = PRESETS.filter((p) => p.type === "corp");
+
+  assert.ok(treasuries.length >= 4);
+  assert.ok(corporates.length >= 5);
+  assert.ok(corporates.some((c) => c.issuer === "Apple Inc."));
+  assert.ok(corporates.some((c) => c.issuer === "Microsoft Corp."));
+  assert.ok(corporates.some((c) => c.issuer === "JPMorgan Chase & Co."));
 });

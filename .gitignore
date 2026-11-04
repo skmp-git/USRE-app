@@ -18,10 +18,6 @@ eggs/
 .eggs/
 /lib/
 /lib64/
-!amber-terminal/lib/
-!amber-terminal/lib/**
-!amber-terminal/public/lib/
-!amber-terminal/public/lib/**
 parts/
 sdist/
 var/
