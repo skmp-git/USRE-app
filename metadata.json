@@ -1,0 +1,6 @@
+{
+  "name": "Fixed Income Desktop Portfolio Management Workstation",
+  "description": "Institutional-grade Fixed Income Portfolio Management desktop application with local SQLite database, T_0 inception snapshot roll-forward engine, quantitative risk metrics (YTM, duration, convexity, DV01), multi-currency aggregation, and structured note models.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
