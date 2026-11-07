@@ -39,6 +39,36 @@ export const FEEDS = {
     ["FT", "https://www.ft.com/global-economy?format=rss"],
     ["Federal Reserve", "https://www.federalreserve.gov/feeds/press_all.xml"],
   ],
+  RATES: [
+    ["CNBC Bonds", cnbc(20910258)],
+    ["Bloomberg Rates", "https://feeds.bloomberg.com/economics/news.rss"],
+    ["Treasury Direct", "https://www.treasurydirect.gov/rss/press_releases.xml"],
+    ["NY Fed", "https://www.newyorkfed.org/markets/rss.xml"],
+  ],
+  MARKET: [
+    ["CNBC Markets", cnbc(100003114)],
+    ["WSJ Markets", "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain"],
+    ["FT Markets", "https://www.ft.com/markets?format=rss"],
+    ["MarketWatch", "https://feeds.content.dowjones.io/public/rss/mw_topstories"],
+  ],
+  COMMODITY: [
+    ["CNBC Commodities", cnbc(19836768)],
+    ["Bloomberg Energy", "https://feeds.bloomberg.com/energy/news.rss"],
+    ["MarketWatch Commodities", "https://feeds.content.dowjones.io/public/rss/mw_commodities"],
+    ["OilPrice", "https://oilprice.com/rss/main"],
+  ],
+  FX: [
+    ["CNBC Currencies", cnbc(20910258)],
+    ["ForexLive", "https://www.forexlive.com/feed/news"],
+    ["DailyFX", "https://www.dailyfx.com/feeds/market-news"],
+    ["FT Currencies", "https://www.ft.com/currencies?format=rss"],
+  ],
+  "PRIVATE CAPITAL": [
+    ["PitchBook", "https://pitchbook.com/news/rss"],
+    ["PE Hub", "https://www.pehub.com/feed/"],
+    ["Buyouts Insider", "https://www.buyoutsinsider.com/feed/"],
+    ["Private Debt Investor", "https://www.privatedebtinvestor.com/feed/"],
+  ],
 };
 const FALLBACK = [
   "Google News",

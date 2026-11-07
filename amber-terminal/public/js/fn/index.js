@@ -17,6 +17,7 @@ import playbooks from "./playbooks.js";
 import yas from "./yas.js";
 import srch from "./srch.js";
 import firv from "./firv.js";
+import rels from "./rels.js";
 
 export const FUNCS = {};
-for (const f of [...market, ...security, ...calendar, ...newsfilings, ...docsearch, ...rates, ...options, ...btst, ...coverage, ...workspace, ...equity, ...playbooks, ...yas, ...srch, ...firv, ...apiHelp, ...meta]) FUNCS[f.id] = f;
+for (const f of [...market, ...security, ...calendar, ...newsfilings, ...docsearch, ...rates, ...options, ...btst, ...coverage, ...workspace, ...equity, ...playbooks, ...yas, ...srch, ...firv, ...rels, ...apiHelp, ...meta]) FUNCS[f.id] = f;

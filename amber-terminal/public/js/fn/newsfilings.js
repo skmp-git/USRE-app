@@ -3,8 +3,30 @@ import { api, esc, px, pct, num, big, ago, cls } from "../api.js";
 import { table, kv, sect, tabs, html } from "../ui.js";
 
 // TOP CRYPTO and TOP COINS both open the crypto feeds.
-const NEWS_GROUPS = { ALL: "ALL", TECH: "TECH", CRYPTO: "CRYPTO", ECON: "ECON" };
-const ALIAS = { COINS: "CRYPTO" };
+const NEWS_GROUPS = {
+  ALL: "ALL",
+  TECH: "TECH",
+  CRYPTO: "CRYPTO",
+  ECON: "ECON",
+  RATES: "RATES",
+  MARKET: "MARKET",
+  COMMODITY: "COMMODITY",
+  FX: "FX",
+  "PRIVATE CAPITAL": "PRIVATE CAPITAL",
+};
+const ALIAS = {
+  COINS: "CRYPTO",
+  BONDS: "RATES",
+  RATE: "RATES",
+  MARKETS: "MARKET",
+  COMMODITIES: "COMMODITY",
+  CURRENCIES: "FX",
+  FOREX: "FX",
+  PE: "PRIVATE CAPITAL",
+  PC: "PRIVATE CAPITAL",
+  "PRIVATE EQUITY": "PRIVATE CAPITAL",
+  "PRIVATE CREDIT": "PRIVATE CAPITAL",
+};
 const FILING_TABS = ["ALL", "10-K", "10-Q", "8-K", "4"];
 const INSIDER_TABS = ["ALL", "BUYS", "SELLS"];
 
