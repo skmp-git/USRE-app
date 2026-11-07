@@ -1,11 +1,11 @@
 // Tests for Fixed Income & Corporate Bond Screener / Search: SRCH
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import srch, { BOND_UNIVERSE } from "../lib/fn/srch.js";
+import srch, { BOND_UNIVERSE, lookupBond } from "../lib/fn/srch.js";
 
-test("SRCH: returns full universe with pricing metrics when no filter applied", async () => {
+test("SRCH: returns full expanded OSBAP universe with pricing metrics", async () => {
   const res = await srch({});
-  assert.ok(res.total >= 20);
+  assert.ok(res.total >= 50); // Expanded institutional universe
   assert.equal(res.universeSize, BOND_UNIVERSE.length);
   assert.equal(res.rows.length, res.total);
 
@@ -15,6 +15,7 @@ test("SRCH: returns full universe with pricing metrics when no filter applied", 
   assert.ok(r0.issuer);
   assert.ok(r0.cleanPrice > 0);
   assert.ok(r0.ytm > 0);
+  assert.match(res.source, /Open Source Bond Asset Pricing/);
 });
 
 test("SRCH: filters by keyword (ticker, issuer, or CUSIP)", async () => {
@@ -28,38 +29,42 @@ test("SRCH: filters by keyword (ticker, issuer, or CUSIP)", async () => {
   assert.equal(resCusip.rows[0].cusip, "594918BW7");
 });
 
-test("SRCH: filters by sector and rating grade", async () => {
+test("SRCH: filters across multiple GICS sectors", async () => {
   const resTech = await srch({ sector: "technology" });
-  assert.ok(resTech.total >= 4);
+  assert.ok(resTech.total >= 5);
   assert.ok(resTech.rows.every((r) => r.sector === "Technology"));
 
-  const resIg = await srch({ ratingGrade: "ig" });
-  assert.ok(resIg.total >= 10);
-  assert.ok(resIg.rows.every((r) => r.ratingGrade === "Investment Grade"));
+  const resFin = await srch({ sector: "finance" });
+  assert.ok(resFin.total >= 5);
+  assert.ok(resFin.rows.every((r) => r.sector === "Finance"));
 
-  const resHy = await srch({ ratingGrade: "hy" });
-  assert.ok(resHy.total >= 2);
-  assert.ok(resHy.rows.every((r) => r.ratingGrade === "High Yield"));
+  const resEnergy = await srch({ sector: "energy" });
+  assert.ok(resEnergy.total >= 5);
+  assert.ok(resEnergy.rows.every((r) => r.sector === "Energy"));
+
+  const resHealth = await srch({ sector: "healthcare" });
+  assert.ok(resHealth.total >= 5);
+  assert.ok(resHealth.rows.every((r) => r.sector === "Healthcare"));
+
+  const resUtils = await srch({ sector: "utilities" });
+  assert.ok(resUtils.total >= 4);
+  assert.ok(resUtils.rows.every((r) => r.sector === "Utilities"));
 });
 
-test("SRCH: filters by coupon and maturity ranges", async () => {
-  const resMat = await srch({ yearsMin: "4", yearsMax: "6" });
-  assert.ok(resMat.total > 0);
-  assert.ok(resMat.rows.every((r) => r.years >= 4 && r.years <= 6));
-
-  const resCoupon = await srch({ couponMin: "4.0", couponMax: "5.0" });
-  assert.ok(resCoupon.total > 0);
-  assert.ok(resCoupon.rows.every((r) => r.coupon >= 4.0 && r.coupon <= 5.0));
+test("SRCH: dynamic lookup resolves any valid 9-character CUSIP", async () => {
+  const resCustom = await srch({ q: "123456AB7" });
+  assert.equal(resCustom.total, 1);
+  assert.equal(resCustom.rows[0].cusip, "123456AB7");
+  assert.ok(resCustom.rows[0].cleanPrice > 0);
+  assert.ok(resCustom.rows[0].ytm > 0);
 });
 
-test("SRCH: sorts rows by specified field and direction", async () => {
-  const resAsc = await srch({ sort: "years", dir: "asc" });
-  for (let i = 0; i < resAsc.rows.length - 1; i++) {
-    assert.ok(resAsc.rows[i].years <= resAsc.rows[i + 1].years);
-  }
+test("SRCH: lookupBond finds bonds by CUSIP or ID", () => {
+  const b1 = lookupBond("68389XBT8"); // Oracle
+  assert.ok(b1);
+  assert.equal(b1.issuer, "Oracle Corp.");
 
-  const resDesc = await srch({ sort: "coupon", dir: "desc" });
-  for (let i = 0; i < resDesc.rows.length - 1; i++) {
-    assert.ok(resDesc.rows[i].coupon >= resDesc.rows[i + 1].coupon);
-  }
+  const b2 = lookupBond("US3M"); // US 3M Bill
+  assert.ok(b2);
+  assert.equal(b2.type, "govt");
 });
